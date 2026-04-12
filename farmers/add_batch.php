@@ -1,0 +1,159 @@
+<?php
+session_start();
+error_reporting(0);
+include('../admin/include/config.php');
+include('../admin/include/admin-auth.php');
+
+$activePage = 'farmers';
+$pageError = '';
+$farmers = array();
+
+if ($con) {
+    $stmt = mysqli_prepare($con, "SELECT id, name FROM farmers ORDER BY name ASC");
+    if ($stmt) {
+        if (mysqli_stmt_execute($stmt)) {
+            $result = mysqli_stmt_get_result($stmt);
+            if ($result) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $farmers[] = $row;
+                }
+            }
+        } else {
+            $pageError = 'Unable to fetch farmers at the moment.';
+        }
+        mysqli_stmt_close($stmt);
+    } else {
+        $pageError = 'Unable to prepare farmers query.';
+    }
+} else {
+    $pageError = 'Database connection is not available.';
+}
+
+$status = isset($_GET['status']) ? trim($_GET['status']) : '';
+$message = isset($_GET['message']) ? trim($_GET['message']) : '';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Admin | Add Batch</title>
+	<link type="text/css" href="../admin/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link type="text/css" href="../admin/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link type="text/css" href="../admin/css/theme.css" rel="stylesheet">
+	<link type="text/css" href="../admin/images/icons/css/font-awesome.css" rel="stylesheet">
+	<link type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
+	<link rel="shortcut icon" href="../assets/images/favicon.ico">
+	<style>
+		.batch-form-shell { max-width: 760px; margin: 0 auto; }
+		.batch-card.module { border-radius: 8px; overflow: hidden; }
+		.batch-card .module-head { padding: 14px 18px; }
+		.batch-card .module-body { padding: 24px 22px 12px; }
+		.batch-card .control-group { margin-bottom: 18px; }
+		.batch-card .control-label { font-weight: 600; }
+		.batch-card input,
+		.batch-card select { border-radius: 6px; padding: 8px 10px; min-height: 38px; box-sizing: border-box; }
+		.batch-card .form-actions-wrap { margin-top: 4px; }
+	</style>
+</head>
+<body>
+<?php include('../admin/include/header.php'); ?>
+	<div class="wrapper">
+		<div class="container">
+			<div class="row">
+				<?php include('../admin/include/sidebar.php'); ?>
+				<div class="span9">
+					<div class="content">
+						<div class="batch-form-shell">
+							<div class="module batch-card">
+								<div class="module-head">
+									<h3>Add Harvest Batch</h3>
+								</div>
+								<div class="module-body">
+<?php if ($message !== '') { ?>
+									<div class="alert <?php echo ($status === 'success') ? 'alert-success' : 'alert-error'; ?>">
+										<button type="button" class="close" data-dismiss="alert">x</button>
+										<?php echo htmlentities($message); ?>
+									</div>
+<?php } ?>
+<?php if ($pageError !== '') { ?>
+									<div class="alert alert-error">
+										<button type="button" class="close" data-dismiss="alert">x</button>
+										<?php echo htmlentities($pageError); ?>
+									</div>
+<?php } ?>
+									<form class="form-horizontal row-fluid" action="<?php echo appUrl('/admin/add_batch.php'); ?>" method="post" novalidate>
+										<div class="control-group">
+											<label class="control-label" for="farmer_id">Farmer</label>
+											<div class="controls">
+												<select id="farmer_id" name="farmer_id" class="span10" required>
+													<option value="">Select Farmer</option>
+<?php foreach ($farmers as $farmer) { ?>
+													<option value="<?php echo htmlentities((string)$farmer['id']); ?>"><?php echo htmlentities($farmer['name']); ?></option>
+<?php } ?>
+												</select>
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label" for="harvest_date">Harvest Date</label>
+											<div class="controls">
+												<input type="date" id="harvest_date" name="harvest_date" class="span10" required>
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label" for="quantity_kg">Quantity (kg)</label>
+											<div class="controls">
+												<input type="number" id="quantity_kg" name="quantity_kg" class="span10" placeholder="e.g. 1200.50" min="0.01" step="0.01" required>
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label" for="initial_moisture">Initial Moisture (%)</label>
+											<div class="controls">
+												<input type="number" id="initial_moisture" name="initial_moisture" class="span10" placeholder="e.g. 18.5" min="0" max="100" step="0.01">
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label" for="remaining_qty_kg">Remaining Quantity (kg)</label>
+											<div class="controls">
+												<input type="number" id="remaining_qty_kg" name="remaining_qty_kg" class="span10" placeholder="Leave empty to use Quantity (kg)" min="0" step="0.01">
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label" for="drying_method">Drying Method</label>
+											<div class="controls">
+												<select id="drying_method" name="drying_method" class="span10">
+													<option value="">Select Method</option>
+													<option value="Sun Drying">Sun Drying</option>
+													<option value="Mechanical Dryer">Mechanical Dryer</option>
+													<option value="Raised Bed Drying">Raised Bed Drying</option>
+													<option value="Hybrid Method">Hybrid Method</option>
+												</select>
+											</div>
+										</div>
+										<div class="control-group">
+											<label class="control-label" for="sorting_quality_score">Sorting Quality Score</label>
+											<div class="controls">
+												<input type="number" id="sorting_quality_score" name="sorting_quality_score" class="span10" placeholder="e.g. 85" min="0" max="100" step="0.01">
+											</div>
+										</div>
+										<div class="control-group form-actions-wrap">
+											<div class="controls">
+												<button type="submit" class="btn btn-primary">Save Batch</button>
+												<a href="<?php echo appUrl('/farmers/batches.php'); ?>" class="btn">View Batch Records</a>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+<?php include('../admin/include/footer.php'); ?>
+	<script src="../admin/scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
+	<script src="../admin/scripts/jquery-ui-1.10.1.custom.min.js" type="text/javascript"></script>
+	<script src="../admin/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+</body>
+</html>
