@@ -3,15 +3,18 @@ session_start();
 error_reporting(0);
 include('../admin/include/config.php');
 include('../admin/include/admin-auth.php');
+requireAdminOrFarmer(appUrl('/farmers/login.php'));
 
-$activePage = 'farmers';
+$activePage = 'batches';
 $pageError = '';
 $batches = array();
 
 if ($con) {
+    mysqli_query($con, "UPDATE batches SET status='complete' WHERE status='drying' AND end_time IS NOT NULL AND end_time <= NOW()");
+
     $stmt = mysqli_prepare(
         $con,
-        "SELECT b.batch_id, b.farmer_id, f.name AS farmer_name, b.harvest_date, b.quantity_kg, b.initial_moisture, b.remaining_qty_kg, b.drying_method, b.sorting_quality_score, b.created_at
+        "SELECT b.batch_id, b.farmer_id, f.name AS farmer_name, b.harvest_date, b.quantity_kg, b.initial_moisture, b.remaining_qty_kg, b.drying_method, b.sorting_quality_score, b.start_time, b.end_time, b.status, b.created_at
          FROM batches b
          INNER JOIN farmers f ON f.id = b.farmer_id
          ORDER BY b.batch_id DESC"
@@ -54,6 +57,7 @@ $newBatchId = isset($_GET['new_batch_id']) ? (int)$_GET['new_batch_id'] : 0;
 	<link rel="shortcut icon" href="../assets/images/favicon.ico">
 	<style>
 		.new-batch-row { background-color: #f5faf4 !important; }
+		.batch-complete-row { background-color: #eef7ea !important; }
 	</style>
 </head>
 <body>
@@ -61,7 +65,7 @@ $newBatchId = isset($_GET['new_batch_id']) ? (int)$_GET['new_batch_id'] : 0;
 	<div class="wrapper">
 		<div class="container">
 			<div class="row">
-				<?php include('../admin/include/sidebar.php'); ?>
+				<?php include('include/sidebar.php'); ?>
 				<div class="span9">
 					<div class="content">
 						<div class="module">
@@ -94,12 +98,23 @@ $newBatchId = isset($_GET['new_batch_id']) ? (int)$_GET['new_batch_id'] : 0;
 											<th>Remaining Qty (kg)</th>
 											<th>Drying Method</th>
 											<th>Sorting Score</th>
+											<th>Time Left to Dry</th>
+											<th>Status</th>
 											<th>Created At</th>
 										</tr>
 									</thead>
 									<tbody>
 <?php foreach ($batches as $batch) { ?>
-										<tr class="<?php echo ($newBatchId > 0 && (int)$batch['batch_id'] === $newBatchId) ? 'new-batch-row' : ''; ?>">
+<?php
+    $rowClasses = array();
+    if ($newBatchId > 0 && (int)$batch['batch_id'] === $newBatchId) {
+        $rowClasses[] = 'new-batch-row';
+    }
+    if ($batch['status'] === 'complete') {
+        $rowClasses[] = 'batch-complete-row';
+    }
+?>
+										<tr class="<?php echo implode(' ', $rowClasses); ?>" data-batch-id="<?php echo (int)$batch['batch_id']; ?>" data-end-time="<?php echo htmlentities((string)$batch['end_time']); ?>" data-status="<?php echo htmlentities((string)$batch['status']); ?>">
 											<td><?php echo htmlentities((string)$batch['batch_id']); ?></td>
 											<td><?php echo htmlentities($batch['farmer_name']); ?></td>
 											<td><?php echo htmlentities($batch['harvest_date']); ?></td>
@@ -108,6 +123,8 @@ $newBatchId = isset($_GET['new_batch_id']) ? (int)$_GET['new_batch_id'] : 0;
 											<td><?php echo htmlentities(number_format((float)$batch['remaining_qty_kg'], 2)); ?></td>
 											<td><?php echo ($batch['drying_method'] !== null && $batch['drying_method'] !== '') ? htmlentities($batch['drying_method']) : '-'; ?></td>
 											<td><?php echo ($batch['sorting_quality_score'] !== null && $batch['sorting_quality_score'] !== '') ? htmlentities(number_format((float)$batch['sorting_quality_score'], 2)) : '-'; ?></td>
+											<td class="time-left-cell">-</td>
+											<td class="status-cell"><?php echo htmlentities(ucfirst((string)$batch['status'])); ?></td>
 											<td><?php echo htmlentities($batch['created_at']); ?></td>
 										</tr>
 <?php } ?>
@@ -136,6 +153,95 @@ $newBatchId = isset($_GET['new_batch_id']) ? (int)$_GET['new_batch_id'] : 0;
 			$('.dataTables_paginate > a:first-child').append('<i class="icon-chevron-left shaded"></i>');
 			$('.dataTables_paginate > a:last-child').append('<i class="icon-chevron-right shaded"></i>');
 		});
+
+		(function() {
+			function parseMysqlDateTime(value) {
+				if (!value) {
+					return null;
+				}
+				var parts = value.split(/[- :]/);
+				if (parts.length < 6) {
+					return null;
+				}
+				return new Date(
+					parseInt(parts[0], 10),
+					parseInt(parts[1], 10) - 1,
+					parseInt(parts[2], 10),
+					parseInt(parts[3], 10),
+					parseInt(parts[4], 10),
+					parseInt(parts[5], 10)
+				);
+			}
+
+			function formatTimeLeft(diffMs) {
+				var totalMinutes = Math.floor(diffMs / (1000 * 60));
+				var days = Math.floor(totalMinutes / (60 * 24));
+				var hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+				var minutes = totalMinutes % 60;
+				return days + ' days ' + hours + ' hours ' + minutes + ' minutes';
+			}
+
+			function markBatchComplete(batchId, row) {
+				var xhr = new XMLHttpRequest();
+				xhr.open('POST', '<?php echo appUrl('/admin/complete_batch.php'); ?>', true);
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState === 4 && xhr.status === 200) {
+						row.setAttribute('data-status', 'complete');
+						row.classList.add('batch-complete-row');
+						var statusCell = row.querySelector('.status-cell');
+						if (statusCell) {
+							statusCell.textContent = 'Complete';
+						}
+					}
+				};
+				xhr.send('batch_id=' + encodeURIComponent(batchId));
+			}
+
+			function updateCountdowns() {
+				var rows = document.querySelectorAll('tr[data-batch-id]');
+				var now = new Date();
+
+				for (var i = 0; i < rows.length; i++) {
+					var row = rows[i];
+					var status = row.getAttribute('data-status');
+					var endTime = parseMysqlDateTime(row.getAttribute('data-end-time'));
+					var timeCell = row.querySelector('.time-left-cell');
+					var statusCell = row.querySelector('.status-cell');
+
+					if (!timeCell || !statusCell) {
+						continue;
+					}
+
+					if (status === 'complete') {
+						timeCell.textContent = 'Drying Complete';
+						statusCell.textContent = 'Complete';
+						row.classList.add('batch-complete-row');
+						continue;
+					}
+
+					if (!endTime) {
+						timeCell.textContent = '-';
+						continue;
+					}
+
+					var diffMs = endTime.getTime() - now.getTime();
+					if (diffMs <= 0) {
+						timeCell.textContent = 'Drying Complete';
+						statusCell.textContent = 'Complete';
+						row.classList.add('batch-complete-row');
+						row.setAttribute('data-status', 'complete');
+						markBatchComplete(row.getAttribute('data-batch-id'), row);
+					} else {
+						timeCell.textContent = formatTimeLeft(diffMs);
+						statusCell.textContent = 'Drying';
+					}
+				}
+			}
+
+			updateCountdowns();
+			setInterval(updateCountdowns, 60000);
+		})();
 	</script>
 </body>
 </html>

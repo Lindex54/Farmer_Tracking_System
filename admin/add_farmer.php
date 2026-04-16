@@ -19,6 +19,61 @@ function redirect_with_message($status, $message)
     exit();
 }
 
+function generate_unique_username($con, $baseUsername, $excludeId = 0)
+{
+    $baseUsername = strtolower(trim((string)$baseUsername));
+    $baseUsername = preg_replace('/\s+/', '_', $baseUsername);
+    $baseUsername = preg_replace('/[^a-z0-9_]/', '', (string)$baseUsername);
+    $baseUsername = trim((string)$baseUsername, '_');
+    if ($baseUsername === '') {
+        $baseUsername = 'farmer000';
+    }
+
+    $username = $baseUsername;
+    $suffix = 0;
+
+    $checkStmt = mysqli_prepare($con, "SELECT id FROM farmers WHERE username = ? AND id <> ? LIMIT 1");
+    if (!$checkStmt) {
+        return $username;
+    }
+
+    while (true) {
+        mysqli_stmt_bind_param($checkStmt, 'si', $username, $excludeId);
+        mysqli_stmt_execute($checkStmt);
+        mysqli_stmt_store_result($checkStmt);
+
+        if (mysqli_stmt_num_rows($checkStmt) === 0) {
+            break;
+        }
+
+        mysqli_stmt_free_result($checkStmt);
+        $suffix = $suffix + 1;
+        $username = $baseUsername . $suffix;
+    }
+
+    mysqli_stmt_close($checkStmt);
+    return $username;
+}
+
+function build_username_base($name, $farmerNumber)
+{
+    $processedName = strtolower(trim((string)$name));
+    $processedName = preg_replace('/\s+/', '_', $processedName);
+    $processedName = preg_replace('/[^a-z0-9_]/', '', (string)$processedName);
+    $processedName = trim((string)$processedName, '_');
+    if ($processedName === '') {
+        $processedName = 'farmer';
+    }
+
+    $digitsOnly = preg_replace('/\D+/', '', (string)$farmerNumber);
+    if ($digitsOnly === '') {
+        $digitsOnly = '000';
+    }
+    $lastThreeDigits = substr(str_pad($digitsOnly, 3, '0', STR_PAD_LEFT), -3);
+
+    return $processedName . $lastThreeDigits;
+}
+
 if (!isAdmin()) {
     $_SESSION['errmsg'] = 'Unauthorized access.';
     header('Location: ' . appUrl('/admin/index.php'));
@@ -65,15 +120,58 @@ if ($farmSizeInput !== '') {
     $farmSizeParam = number_format($farmSize, 2, '.', '');
 }
 
-$stmt = mysqli_prepare($con, "INSERT INTO farmers (name, location, phone, farm_size, group_membership) VALUES (?, ?, ?, NULLIF(?, ''), ?)");
+$temporaryUsername = 'tmp_' . uniqid('', true);
+$temporaryUsername = str_replace('.', '', $temporaryUsername);
+
+$stmt = mysqli_prepare($con, "INSERT INTO farmers (name, username, location, phone, farm_size, group_membership) VALUES (?, ?, ?, ?, NULLIF(?, ''), ?)");
 if (!$stmt) {
     redirect_with_message('error', 'Unable to prepare farmer insert query.');
 }
 
-mysqli_stmt_bind_param($stmt, 'sssss', $name, $location, $phone, $farmSizeParam, $groupMembership);
+mysqli_stmt_bind_param($stmt, 'ssssss', $name, $temporaryUsername, $location, $phone, $farmSizeParam, $groupMembership);
 
 if (mysqli_stmt_execute($stmt)) {
     mysqli_stmt_close($stmt);
+
+    $newFarmerId = mysqli_insert_id($con);
+    if ($newFarmerId <= 0) {
+        redirect_with_message('error', 'Farmer saved, but unable to finalize username.');
+    }
+
+    $fetchStmt = mysqli_prepare($con, "SELECT farmer_number, name FROM farmers WHERE id = ? LIMIT 1");
+    if (!$fetchStmt) {
+        redirect_with_message('error', 'Farmer saved, but unable to fetch farmer number.');
+    }
+
+    mysqli_stmt_bind_param($fetchStmt, 'i', $newFarmerId);
+    if (!mysqli_stmt_execute($fetchStmt)) {
+        mysqli_stmt_close($fetchStmt);
+        redirect_with_message('error', 'Farmer saved, but unable to fetch farmer number.');
+    }
+
+    $result = mysqli_stmt_get_result($fetchStmt);
+    $newFarmer = $result ? mysqli_fetch_assoc($result) : null;
+    mysqli_stmt_close($fetchStmt);
+
+    if (!$newFarmer || !isset($newFarmer['farmer_number'])) {
+        redirect_with_message('error', 'Farmer saved, but farmer number was not found.');
+    }
+
+    $baseUsername = build_username_base($newFarmer['name'], $newFarmer['farmer_number']);
+    $finalUsername = generate_unique_username($con, $baseUsername, (int)$newFarmerId);
+
+    $updateStmt = mysqli_prepare($con, "UPDATE farmers SET username = ? WHERE id = ? LIMIT 1");
+    if (!$updateStmt) {
+        redirect_with_message('error', 'Farmer saved, but unable to update username.');
+    }
+
+    mysqli_stmt_bind_param($updateStmt, 'si', $finalUsername, $newFarmerId);
+    if (!mysqli_stmt_execute($updateStmt)) {
+        mysqli_stmt_close($updateStmt);
+        redirect_with_message('error', 'Farmer saved, but username update failed.');
+    }
+    mysqli_stmt_close($updateStmt);
+
     redirect_with_message('success', 'Farmer added successfully.');
 }
 

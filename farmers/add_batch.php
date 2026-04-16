@@ -3,8 +3,9 @@ session_start();
 error_reporting(0);
 include('../admin/include/config.php');
 include('../admin/include/admin-auth.php');
+requireAdminOrFarmer(appUrl('/farmers/login.php'));
 
-$activePage = 'farmers';
+$activePage = 'add-batches';
 $pageError = '';
 $farmers = array();
 
@@ -31,6 +32,7 @@ if ($con) {
 
 $status = isset($_GET['status']) ? trim($_GET['status']) : '';
 $message = isset($_GET['message']) ? trim($_GET['message']) : '';
+$batchId = isset($_GET['batch_id']) ? (int)$_GET['batch_id'] : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,7 +63,7 @@ $message = isset($_GET['message']) ? trim($_GET['message']) : '';
 	<div class="wrapper">
 		<div class="container">
 			<div class="row">
-				<?php include('../admin/include/sidebar.php'); ?>
+				<?php include('include/sidebar.php'); ?>
 				<div class="span9">
 					<div class="content">
 						<div class="batch-form-shell">
@@ -82,7 +84,8 @@ $message = isset($_GET['message']) ? trim($_GET['message']) : '';
 										<?php echo htmlentities($pageError); ?>
 									</div>
 <?php } ?>
-									<form class="form-horizontal row-fluid" action="<?php echo appUrl('/admin/add_batch.php'); ?>" method="post" novalidate>
+									<form id="batchForm" class="form-horizontal row-fluid" action="<?php echo appUrl('/admin/add_batch.php'); ?>" method="post" novalidate>
+										<input type="hidden" name="batch_id" value="<?php echo $batchId > 0 ? $batchId : 0; ?>">
 										<div class="control-group">
 											<label class="control-label" for="farmer_id">Farmer</label>
 											<div class="controls">
@@ -121,7 +124,7 @@ $message = isset($_GET['message']) ? trim($_GET['message']) : '';
 										<div class="control-group">
 											<label class="control-label" for="drying_method">Drying Method</label>
 											<div class="controls">
-												<select id="drying_method" name="drying_method" class="span10">
+												<select id="drying_method" name="drying_method" class="span10" required>
 													<option value="">Select Method</option>
 													<option value="Sun Drying">Sun Drying</option>
 													<option value="Mechanical Dryer">Mechanical Dryer</option>
@@ -155,5 +158,37 @@ $message = isset($_GET['message']) ? trim($_GET['message']) : '';
 	<script src="../admin/scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
 	<script src="../admin/scripts/jquery-ui-1.10.1.custom.min.js" type="text/javascript"></script>
 	<script src="../admin/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+	<script>
+	(function () {
+		var form = document.getElementById('batchForm');
+		if (!form) {
+			return;
+		}
+
+		var durationMap = {
+			'Sun Drying': '5 days',
+			'Mechanical Dryer': '12 hours',
+			'Raised Bed Drying': '2 days',
+			'Hybrid Method': '24 hours'
+		};
+
+		form.addEventListener('submit', function (event) {
+			var dryingMethodField = document.getElementById('drying_method');
+			var selectedMethod = dryingMethodField ? dryingMethodField.value : '';
+			var predictedTime = durationMap[selectedMethod] || '';
+
+			if (!predictedTime) {
+				alert('Please select a drying method.');
+				event.preventDefault();
+				return;
+			}
+
+			var confirmMessage = 'Your predicted drying time is ' + predictedTime + '. You will be redirected to the batches page.';
+			if (!window.confirm(confirmMessage)) {
+				event.preventDefault();
+			}
+		});
+	})();
+	</script>
 </body>
 </html>

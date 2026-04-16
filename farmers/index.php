@@ -10,7 +10,7 @@ $farmers = array();
 $pageError = '';
 
 if ($con) {
-    $stmt = mysqli_prepare($con, "SELECT id, name, location, phone, farm_size, group_membership, created_at FROM farmers ORDER BY created_at DESC");
+    $stmt = mysqli_prepare($con, "SELECT id, farmer_number, username, name, location, phone, farm_size, group_membership, created_at FROM farmers ORDER BY created_at DESC");
     if ($stmt) {
         if (mysqli_stmt_execute($stmt)) {
             $result = mysqli_stmt_get_result($stmt);
@@ -77,6 +77,8 @@ $message = isset($_GET['message']) ? trim($_GET['message']) : '';
 									<thead>
 										<tr>
 											<th>#</th>
+											<th>Farmer Number</th>
+											<th>Username</th>
 											<th>Name</th>
 											<th>Location</th>
 											<th>Phone</th>
@@ -93,6 +95,8 @@ foreach ($farmers as $farmer) {
 ?>
 										<tr>
 											<td><?php echo htmlentities($cnt); ?></td>
+											<td><?php echo ($farmer['farmer_number'] !== null && $farmer['farmer_number'] !== '') ? htmlentities($farmer['farmer_number']) : '-'; ?></td>
+											<td><?php echo ($farmer['username'] !== null && $farmer['username'] !== '') ? htmlentities($farmer['username']) : '-'; ?></td>
 											<td><?php echo htmlentities($farmer['name']); ?></td>
 											<td><?php echo htmlentities($farmer['location']); ?></td>
 											<td><?php echo htmlentities($farmer['phone']); ?></td>

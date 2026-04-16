@@ -39,9 +39,38 @@ function isAdmin()
     return false;
 }
 
+function isFarmer()
+{
+    if (isset($_SESSION['role']) && strtolower((string)$_SESSION['role']) === 'farmer') {
+        return true;
+    }
+
+    return false;
+}
+
+function isAdminOrFarmer()
+{
+    return isAdmin() || isFarmer();
+}
+
 function requireAdmin($redirectTo = null)
 {
     if (isAdmin()) {
+        return;
+    }
+
+    if ($redirectTo === null || $redirectTo === '') {
+        $redirectTo = appUrl('/admin/index.php');
+    }
+
+    $_SESSION['errmsg'] = 'Unauthorized access.';
+    header('Location: ' . $redirectTo);
+    exit();
+}
+
+function requireAdminOrFarmer($redirectTo = null)
+{
+    if (isAdminOrFarmer()) {
         return;
     }
 

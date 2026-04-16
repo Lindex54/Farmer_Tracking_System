@@ -1694,3 +1694,127 @@ filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', end
 	border-radius: 0 0 3px 0
 }
 @media(max-width:767px){body{padding:0!important}.wrapper{padding:20px 15px}}
+
+/* Professional table readability (admin + farmers panels) */
+.module-body.table .table {
+	background: #ffffff;
+	color: #24313a;
+}
+.module-body.table .table thead th {
+	background: #2f6f57;
+	color: #ffffff;
+	border-color: #2a624d !important;
+	font-weight: 600;
+	text-shadow: none;
+}
+.module-body.table .table tbody td {
+	color: #24313a;
+	background: #ffffff;
+}
+.module-body.table .table-striped tbody > tr:nth-child(odd) > td,
+.module-body.table .table-striped tbody > tr:nth-child(odd) > th {
+	background-color: #f4faf7;
+}
+.module-body.table .table tbody tr:hover > td,
+.module-body.table .table tbody tr:hover > th {
+	background-color: #e7f3ed !important;
+	color: #1e2a32;
+}
+.module-body.table .table a {
+	color: #1f5f4a;
+	font-weight: 600;
+}
+.module-body.table .table a:hover {
+	color: #174939;
+	text-decoration: underline;
+}
+
+/* Keep DataTables sorted headers visible on top of the new palette */
+.dataTables_wrapper table th.sorting_asc,
+.dataTables_wrapper table th.sorting_desc {
+	background: #285f4a;
+	color: #ffffff;
+	box-shadow: none;
+}
+
+/* Force DataTables palette (higher specificity + important) */
+.dataTables_wrapper .datatable-1 thead th,
+.dataTables_wrapper .dataTable thead th,
+.dataTables_wrapper .table thead th {
+	background: #2f6f57 !important;
+	color: #ffffff !important;
+	border-color: #2a624d !important;
+	text-shadow: none !important;
+}
+.dataTables_wrapper .datatable-1 tbody td,
+.dataTables_wrapper .dataTable tbody td {
+	color: #24313a !important;
+}
+.dataTables_wrapper .datatable-1 tbody tr.odd td,
+.dataTables_wrapper .dataTable tbody tr.odd td,
+.dataTables_wrapper .table-striped tbody > tr:nth-child(odd) > td {
+	background: #f4faf7 !important;
+}
+.dataTables_wrapper .datatable-1 tbody tr.even td,
+.dataTables_wrapper .dataTable tbody tr.even td {
+	background: #ffffff !important;
+}
+.dataTables_wrapper .datatable-1 tbody tr:hover td,
+.dataTables_wrapper .dataTable tbody tr:hover td {
+	background: #e7f3ed !important;
+	color: #1e2a32 !important;
+}
+
+/* Global backend data surfaces: forms + tables */
+.module > .module-head {
+	background: #2f6f57 !important;
+	border-color: #285e4a !important;
+	color: #ffffff !important;
+}
+.module > .module-head h3,
+.module > .module-head h4,
+.module > .module-head .btn {
+	color: #ffffff !important;
+}
+.module > .module-body {
+	background: #f9fcfa !important;
+}
+.module > .module-body.table {
+	background: #ffffff !important;
+}
+.form-horizontal .control-label,
+.form-vertical .control-label {
+	color: #1f3f33 !important;
+	font-weight: 600 !important;
+}
+.form-horizontal .controls input[type="text"],
+.form-horizontal .controls input[type="number"],
+.form-horizontal .controls input[type="date"],
+.form-horizontal .controls input[type="email"],
+.form-horizontal .controls input[type="password"],
+.form-horizontal .controls select,
+.form-horizontal .controls textarea,
+.form-vertical .controls input[type="text"],
+.form-vertical .controls input[type="number"],
+.form-vertical .controls input[type="date"],
+.form-vertical .controls input[type="email"],
+.form-vertical .controls input[type="password"],
+.form-vertical .controls select,
+.form-vertical .controls textarea {
+	background: #f4faf7 !important;
+	border: 1px solid #b7d7c8 !important;
+	color: #1e2a32 !important;
+}
+.form-horizontal .controls input:focus,
+.form-horizontal .controls select:focus,
+.form-horizontal .controls textarea:focus,
+.form-vertical .controls input:focus,
+.form-vertical .controls select:focus,
+.form-vertical .controls textarea:focus {
+	border-color: #4b9b77 !important;
+	box-shadow: 0 0 0 2px rgba(75, 155, 119, 0.15) !important;
+}
+.table tbody td,
+.table tbody th {
+	color: #24313a !important;
+}
