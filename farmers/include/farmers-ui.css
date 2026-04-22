@@ -1,0 +1,118 @@
+body {
+    background-color: #eef3ef;
+}
+
+.wrapper {
+    padding-top: 20px;
+}
+
+.module {
+    border: 1px solid #d5e2da;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(10, 34, 20, 0.06);
+}
+
+.module .module-head {
+    background: linear-gradient(90deg, #2f7a4e, #3b9160);
+    border-bottom: 1px solid #2d6a46;
+}
+
+.module .module-head h3 {
+    color: #ffffff;
+    text-shadow: none;
+}
+
+.module .module-body {
+    background-color: #f7fbf8;
+}
+
+.module-body.table {
+    background-color: #f3f8f4;
+}
+
+.table.table-bordered thead th {
+    background-color: #2f6848;
+    color: #ffffff;
+    border-color: #28593f;
+    text-shadow: none;
+}
+
+.table.table-bordered tbody td {
+    color: #203327;
+    border-color: #d4e3d7;
+    vertical-align: middle;
+}
+
+.table.table-striped tbody tr:nth-child(odd) td {
+    background-color: #ffffff;
+}
+
+.table.table-striped tbody tr:nth-child(even) td {
+    background-color: #edf5ef;
+}
+
+.table.table-striped tbody tr:hover td {
+    background-color: #dff0e2 !important;
+}
+
+.table.table-bordered tbody tr.new-batch-row td {
+    background-color: #d9f2df !important;
+}
+
+.table.table-bordered tbody tr.batch-complete-row td {
+    background-color: #cdebd4 !important;
+}
+
+.form-horizontal .control-label,
+.form-vertical label {
+    color: #1f3f2d;
+    font-weight: 600;
+}
+
+.form-horizontal .controls input,
+.form-horizontal .controls select,
+.form-vertical .controls input,
+.form-vertical .controls select {
+    border: 1px solid #b8cdbd;
+    background-color: #ffffff;
+    color: #1f2f24;
+}
+
+.form-horizontal .controls input:focus,
+.form-horizontal .controls select:focus,
+.form-vertical .controls input:focus,
+.form-vertical .controls select:focus {
+    border-color: #4a9b67;
+    box-shadow: 0 0 0 2px rgba(74, 155, 103, 0.15);
+}
+
+.btn-primary {
+    background-color: #2f7a4e;
+    background-image: none;
+    border-color: #2b6d46;
+    text-shadow: none;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #296942;
+}
+
+.datatable-pagination a {
+    background-color: #f0f6f2;
+    border-color: #c9dccc;
+    color: #28573b;
+}
+
+.alert-success {
+    background-color: #d9efdf;
+    border-color: #9dcdad;
+    color: #1e4a2f;
+}
+
+.alert-error {
+    background-color: #f5dddf;
+    border-color: #dfafb4;
+    color: #7a2730;
+}

@@ -53,6 +53,56 @@ function isAdminOrFarmer()
     return isAdmin() || isFarmer();
 }
 
+function getCurrentRoleLabel()
+{
+    if (isFarmer()) {
+        return 'Farmer';
+    }
+
+    if (isAdmin()) {
+        return 'Admin';
+    }
+
+    if (!empty($_SESSION['login'])) {
+        return 'User';
+    }
+
+    return 'Guest';
+}
+
+function getCurrentDisplayName()
+{
+    if (isFarmer()) {
+        if (!empty($_SESSION['farmer_name'])) {
+            return (string)$_SESSION['farmer_name'];
+        }
+
+        if (!empty($_SESSION['farmer_username'])) {
+            return (string)$_SESSION['farmer_username'];
+        }
+
+        return 'Farmer';
+    }
+
+    if (isAdmin()) {
+        if (!empty($_SESSION['admin_name'])) {
+            return (string)$_SESSION['admin_name'];
+        }
+
+        if (!empty($_SESSION['alogin'])) {
+            return (string)$_SESSION['alogin'];
+        }
+
+        return 'Admin';
+    }
+
+    if (!empty($_SESSION['username'])) {
+        return (string)$_SESSION['username'];
+    }
+
+    return 'Guest';
+}
+
 function requireAdmin($redirectTo = null)
 {
     if (isAdmin()) {

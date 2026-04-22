@@ -1,6 +1,17 @@
 <?php 
 //session_start();
-
+$headerDisplayName = '';
+if (!empty($_SESSION['username'])) {
+	$headerDisplayName = (string)$_SESSION['username'];
+} elseif (!empty($_SESSION['farmer_name'])) {
+	$headerDisplayName = (string)$_SESSION['farmer_name'];
+} elseif (!empty($_SESSION['farmer_username'])) {
+	$headerDisplayName = (string)$_SESSION['farmer_username'];
+} elseif (!empty($_SESSION['admin_name'])) {
+	$headerDisplayName = (string)$_SESSION['admin_name'];
+} elseif (!empty($_SESSION['alogin'])) {
+	$headerDisplayName = (string)$_SESSION['alogin'];
+}
 ?>
 
 <div class="top-bar animate-dropdown" style="background-color:#ffecd1;">
@@ -9,9 +20,9 @@
 			<div class="cnt-account">
 				<ul class="list-unstyled">
 
-<?php if(strlen($_SESSION['login']))
+<?php if($headerDisplayName !== '')
     {   ?>
-				<li><a href="#"><i class="icon fa fa-user"></i>Welcome -<?php echo htmlentities($_SESSION['username']);?></a></li>
+				<li><a href="#"><i class="icon fa fa-user"></i>Welcome -<?php echo htmlentities($headerDisplayName);?></a></li>
 				<?php } ?>
 
 					<li><a href="my-account.php"><i class="icon fa fa-user"></i>My Account</a></li>
@@ -20,7 +31,7 @@
 					<li><a href="#"><i class="icon fa fa-key"></i>Checkout</a></li>
 					<?php if(strlen($_SESSION['login'])==0)
     {   ?>
-<li><a href="login.php"><i class="icon fa fa-sign-in"></i>Login</a></li>
+<li><a href="login.php" data-auth-modal-open><i class="icon fa fa-sign-in"></i>Login</a></li>
 <?php }
 else{ ?>
 	

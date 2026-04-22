@@ -9,14 +9,14 @@
         <div class="logo">
             <a href="index.php">
 
-<h3 style="color:#ffffff;">MaizeHub Shopping Portal</h3>
+<h3 style="color:#ffffff;"><?php echo APP_NAME; ?> Marketplace</h3>
 
         </div><!-- /.logo -->
 
     </div><!-- /.footer-logo -->
 
      <div class="module-body m-t-20">
-        <p class="about-us"> Brought To You By <a href="./">MaizeHub </a></p>
+        <p class="about-us"> Brought To You By <a href="./"><?php echo APP_NAME; ?> </a></p>
         <div class="social-icons">
 
         <a href="localhost/shopping/" class='active'><i class="icon fa fa-facebook"></i></a>

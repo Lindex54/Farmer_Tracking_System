@@ -95,12 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errorMessage === '') {
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>MaizeHub | Create Password</title>
+	<title><?php echo APP_NAME; ?> | Create Password</title>
 	<link type="text/css" href="../admin/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="../admin/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
 	<link type="text/css" href="../admin/css/theme.css" rel="stylesheet">
 	<link type="text/css" href="../admin/images/icons/css/font-awesome.css" rel="stylesheet">
 	<link type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
+	<link type="text/css" href="include/farmers-ui.css" rel="stylesheet">
 	<link rel="shortcut icon" href="../assets/images/favicon.ico">
 </head>
 <body>
@@ -108,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errorMessage === '') {
 		<div class="navbar-inner" style="background-color:#4fb477;">
 			<div class="container">
 				<a class="brand" href="<?php echo appUrl('/farmers/login.php'); ?>" style="text-shadow:none;">
-					MaizeHub | Farmer Portal
+					<?php echo APP_NAME; ?> | Farmer Portal
 				</a>
 				<ul class="nav pull-right">
 					<li><a href="<?php echo appUrl('/farmers/login.php'); ?>" style="text-shadow:none; color:#000000;">Back to Login</a></li>
@@ -167,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errorMessage === '') {
 
 	<div class="footer">
 		<div class="container">
-			<b class="copyright">&copy; 2026 MaizeHub</b> All rights reserved.
+			<b class="copyright">&copy; 2026 <?php echo APP_NAME; ?></b> All rights reserved.
 		</div>
 	</div>
 	<script src="../admin/scripts/jquery-1.9.1.min.js" type="text/javascript"></script>

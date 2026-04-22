@@ -1,0 +1,239 @@
+-- MaizeHub database rebuild script
+-- Import this file into MySQL / phpMyAdmin to recreate the database used by this project.
+
+DROP DATABASE IF EXISTS `shopping`;
+CREATE DATABASE `shopping` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `shopping`;
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+CREATE TABLE `admin` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `creationDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updationDate` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+INSERT INTO `admin` (`id`, `username`, `password`, `creationDate`, `updationDate`) VALUES
+(1, 'admin', 'admin', NOW(), '');
+
+CREATE TABLE `category` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `categoryName` varchar(255) DEFAULT NULL,
+  `categoryDescription` longtext DEFAULT NULL,
+  `creationDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updationDate` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `subcategory` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `categoryid` int(11) DEFAULT NULL,
+  `subcategory` varchar(255) DEFAULT NULL,
+  `creationDate` timestamp NULL DEFAULT current_timestamp(),
+  `updationDate` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_subcategory_categoryid` (`categoryid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `category` int(11) NOT NULL,
+  `subCategory` int(11) DEFAULT NULL,
+  `productName` varchar(255) DEFAULT NULL,
+  `productCompany` varchar(255) DEFAULT NULL,
+  `productPrice` int(11) DEFAULT NULL,
+  `productPriceBeforeDiscount` int(11) DEFAULT NULL,
+  `productDescription` longtext DEFAULT NULL,
+  `productImage1` varchar(255) DEFAULT NULL,
+  `productImage2` varchar(255) DEFAULT NULL,
+  `productImage3` varchar(255) DEFAULT NULL,
+  `shippingCharge` int(11) DEFAULT NULL,
+  `productAvailability` varchar(255) DEFAULT NULL,
+  `postingDate` timestamp NULL DEFAULT current_timestamp(),
+  `updationDate` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_products_category` (`category`),
+  KEY `idx_products_subcategory` (`subCategory`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `contactno` bigint(11) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `shippingAddress` longtext DEFAULT NULL,
+  `shippingState` varchar(255) DEFAULT NULL,
+  `shippingCity` varchar(255) DEFAULT NULL,
+  `shippingPincode` int(11) DEFAULT NULL,
+  `billingAddress` longtext DEFAULT NULL,
+  `billingState` varchar(255) DEFAULT NULL,
+  `billingCity` varchar(255) DEFAULT NULL,
+  `billingPincode` int(11) DEFAULT NULL,
+  `regDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updationDate` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `orders` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userId` int(11) DEFAULT NULL,
+  `productId` varchar(255) DEFAULT NULL,
+  `quantity` int(11) DEFAULT NULL,
+  `orderDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `paymentMethod` varchar(50) DEFAULT NULL,
+  `orderStatus` varchar(55) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_orders_userId` (`userId`),
+  KEY `idx_orders_productId` (`productId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `ordertrackhistory` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `orderId` int(11) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `remark` mediumtext DEFAULT NULL,
+  `postingDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_ordertrackhistory_orderId` (`orderId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `productreviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `productId` int(11) DEFAULT NULL,
+  `quality` int(11) DEFAULT NULL,
+  `price` int(11) DEFAULT NULL,
+  `value` int(11) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `summary` varchar(255) DEFAULT NULL,
+  `review` longtext DEFAULT NULL,
+  `reviewDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_productreviews_productId` (`productId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `userlog` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userEmail` varchar(255) DEFAULT NULL,
+  `userip` binary(16) DEFAULT NULL,
+  `loginTime` timestamp NULL DEFAULT current_timestamp(),
+  `logout` varchar(255) DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+CREATE TABLE `farmers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `farmer_number` varchar(20) DEFAULT NULL,
+  `username` varchar(100) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `location` varchar(150) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `farm_size` decimal(10,2) DEFAULT NULL,
+  `group_membership` varchar(100) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_farmers_farmer_number` (`farmer_number`),
+  UNIQUE KEY `uniq_farmers_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `batches` (
+  `batch_id` int(11) NOT NULL AUTO_INCREMENT,
+  `farmer_id` int(11) NOT NULL,
+  `harvest_date` date NOT NULL,
+  `quantity_kg` decimal(10,2) NOT NULL,
+  `initial_moisture` decimal(5,2) DEFAULT NULL,
+  `remaining_qty_kg` decimal(10,2) NOT NULL,
+  `drying_method` varchar(100) DEFAULT NULL,
+  `sorting_quality_score` decimal(5,2) DEFAULT NULL,
+  `start_time` datetime DEFAULT NULL,
+  `end_time` datetime DEFAULT NULL,
+  `status` varchar(50) NOT NULL DEFAULT 'drying',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`batch_id`),
+  KEY `idx_batches_farmer_id` (`farmer_id`),
+  KEY `idx_batches_status` (`status`),
+  KEY `idx_batches_end_time` (`end_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `subcategory`
+  ADD CONSTRAINT `fk_subcategory_category`
+  FOREIGN KEY (`categoryid`) REFERENCES `category` (`id`)
+  ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE `products`
+  ADD CONSTRAINT `fk_products_category`
+  FOREIGN KEY (`category`) REFERENCES `category` (`id`)
+  ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_products_subcategory`
+  FOREIGN KEY (`subCategory`) REFERENCES `subcategory` (`id`)
+  ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE `orders`
+  ADD CONSTRAINT `fk_orders_user`
+  FOREIGN KEY (`userId`) REFERENCES `users` (`id`)
+  ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE `ordertrackhistory`
+  ADD CONSTRAINT `fk_ordertrackhistory_order`
+  FOREIGN KEY (`orderId`) REFERENCES `orders` (`id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `productreviews`
+  ADD CONSTRAINT `fk_productreviews_product`
+  FOREIGN KEY (`productId`) REFERENCES `products` (`id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `batches`
+  ADD CONSTRAINT `fk_batches_farmer`
+  FOREIGN KEY (`farmer_id`) REFERENCES `farmers` (`id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+
+DELIMITER $$
+CREATE TRIGGER `trg_farmers_set_farmer_number`
+AFTER INSERT ON `farmers`
+FOR EACH ROW
+BEGIN
+  UPDATE `farmers`
+  SET `farmer_number` = CONCAT('FRM', LPAD(NEW.`id`, 3, '0'))
+  WHERE `id` = NEW.`id`
+    AND (`farmer_number` IS NULL OR `farmer_number` = '');
+END$$
+DELIMITER ;
+
+INSERT INTO `category` (`id`, `categoryName`, `categoryDescription`, `creationDate`, `updationDate`) VALUES
+(1, 'Maize', 'These has all the maize products to suit your different individual needs', NOW(), NULL),
+(2, 'Maize Products', 'These has all the maize products such as posho, and maize brand', NOW(), NULL),
+(7, 'Rice', 'This category contains all the kinds of rice that grown locally and is available in the local market', NOW(), NULL);
+
+INSERT INTO `subcategory` (`id`, `categoryid`, `subcategory`, `creationDate`, `updationDate`) VALUES
+(1, 1, 'Seeds', NOW(), NULL),
+(2, 1, 'Grains', NOW(), NULL),
+(3, 2, 'Flour', NOW(), NULL),
+(4, 2, 'Brand', NOW(), NULL),
+(19, 7, 'Super Rice', NOW(), NULL),
+(20, 7, 'Kaiso Rice', NOW(), NULL),
+(21, 7, 'Super Kaiso Rice', NOW(), NULL);
+
+INSERT INTO `products` (`id`, `category`, `subCategory`, `productName`, `productCompany`, `productPrice`, `productPriceBeforeDiscount`, `productDescription`, `productImage1`, `productImage2`, `productImage3`, `shippingCharge`, `productAvailability`, `postingDate`, `updationDate`) VALUES
+(22, 2, 3, 'Maize Flour', 'MaizeHub', 2000, 2500, 'Ready for Eating', 'upwxobytyh3jy5dc94dd8d0034.jpg', 'slider-2.jpeg', 'WhatsApp Image 2025-04-15 at 13.56.34_b5e7835c.jpg', 1000, 'In Stock', NOW(), NULL),
+(23, 1, 1, 'Maize Seeds', 'MaizeHub', 1500, 2000, 'Maize seeds for different purposes', 'maize-seeds-2.jpg', 'maize-seeds-1.jpg', 'maize-seeds-3.jpg', 1000, 'In Stock', NOW(), NULL),
+(24, 7, 19, 'Quality Super Rice', 'MaizeHub', 4500, 5000, 'The best of its kind', 'super-rice.png', 'super-1.jpg', 'super-2.jpg', 500, 'In Stock', NOW(), NULL),
+(25, 7, 20, 'Best Kaiso Rice', 'MaizeHub', 2500, 3000, 'The best Kaiso', 'kaiso.jpg', 'kaiso-1.png', '', 500, 'In Stock', NOW(), NULL),
+(26, 7, 21, 'Super Kaiso', 'MaizeHub', 3000, 3500, 'Below is the full description for this product', 'super-2.jpg', 'kaiso-1.png', '', 500, 'In Stock', NOW(), NULL);
+
+INSERT INTO `productreviews` (`id`, `productId`, `quality`, `price`, `value`, `name`, `summary`, `review`, `reviewDate`) VALUES
+(5, 22, 4, 4, 4, 'Solomon', 'I love it', 'It is really good', NOW());
+
+-- Optional starter farmer for testing login and batch flow.
+-- Password is left NULL so you can use the farmer create-password flow in the app.
+INSERT INTO `farmers` (`id`, `username`, `name`, `location`, `phone`, `farm_size`, `group_membership`, `password`, `created_at`) VALUES
+(1, 'farmer001', 'Demo Farmer', 'Kampala', '0700000000', 2.50, 'MaizeHub Demo Group', NULL, NOW());
+
+INSERT INTO `batches` (`batch_id`, `farmer_id`, `harvest_date`, `quantity_kg`, `initial_moisture`, `remaining_qty_kg`, `drying_method`, `sorting_quality_score`, `start_time`, `end_time`, `status`, `created_at`) VALUES
+(1, 1, CURDATE(), 1200.00, 18.50, 1200.00, 'Sun Drying', 85.00, NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), 'drying', NOW());

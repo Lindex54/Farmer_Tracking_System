@@ -13,6 +13,9 @@ if($num>0)
 $extra="todays-orders.php";//
 $_SESSION['alogin']=$_POST['username'];
 $_SESSION['id']=$num['id'];
+$_SESSION['admin_name']=$num['username'];
+$_SESSION['role']='admin';
+unset($_SESSION['farmer_id'], $_SESSION['farmer_username'], $_SESSION['farmer_name']);
 $host=$_SERVER['HTTP_HOST'];
 $uri=rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
 header("location:http://$host$uri/$extra");
@@ -35,7 +38,7 @@ exit();
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Shopping Portal | Admin login</title>
+	<title><?php echo APP_NAME; ?> | Admin login</title>
 	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
 	<link type="text/css" href="css/theme.css" rel="stylesheet">
@@ -54,7 +57,7 @@ exit();
 				</a>
 
 			  	<a class="brand" href="index.html" style="text-shadow:none;">
-			  		MaizeHub | Admin
+			  		<?php echo APP_NAME; ?> | Admin
 			  	</a>
 
 				<div class="nav-collapse collapse navbar-inverse-collapse">
@@ -116,7 +119,7 @@ exit();
 		<div class="container" >
 			 
 
-			<b class="copyright">&copy; 2025 MaizeHub </b> All rights reserved.
+			<b class="copyright">&copy; 2025 <?php echo APP_NAME; ?> </b> All rights reserved.
 		</div>
 	</div>
 	<script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>

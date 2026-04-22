@@ -33,7 +33,7 @@ if(isset($_GET['action']) && $_GET['action']=="add"){
 	    <meta name="keywords" content="MediaCenter, Template, eCommerce">
 	    <meta name="robots" content="all">
 
-	    <title>MiazeHub Portal Home Page</title>
+	    <title><?php echo APP_NAME; ?> | Home</title>
 
 	    <!-- Bootstrap Core CSS -->
 	    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -48,6 +48,8 @@ if(isset($_GET['action']) && $_GET['action']=="add"){
 		<link rel="stylesheet" href="assets/css/animate.min.css">
 		<link rel="stylesheet" href="assets/css/rateit.css">
 		<link rel="stylesheet" href="assets/css/bootstrap-select.min.css">
+		<link rel="stylesheet" href="assets/css/auth-ui.css">
+		<link rel="stylesheet" href="assets/css/home-ui.css">
 
 		<!-- Demo Purpose Only. Should be removed in production -->
 		<link rel="stylesheet" href="assets/css/config.css">
@@ -62,9 +64,36 @@ if(isset($_GET['action']) && $_GET['action']=="add"){
 		
 		<!-- Favicon -->
 		<link rel="shortcut icon" href="assets/images/favicon.ico">
+		<script type="text/javascript">
+		function valid()
+		{
+		 if(document.homeRegister.password.value!= document.homeRegister.confirmpassword.value)
+		{
+		alert("Password and Confirm Password Field do not match  !!");
+		document.homeRegister.confirmpassword.focus();
+		return false;
+		}
+		return true;
+		}
+		</script>
+		<script>
+		function userAvailability() {
+		$("#loaderIcon").show();
+		jQuery.ajax({
+		url: "check_availability.php",
+		data:'email='+$("#home-register-email").val(),
+		type: "POST",
+		success:function(data){
+		$("#home-user-availability-status1").html(data);
+		$("#loaderIcon").hide();
+		},
+		error:function (){}
+		});
+		}
+		</script>
 
 	</head>
-    <body class="cnt-home">
+    <body class="cnt-home home-refresh">
 	
 		
 	
@@ -88,6 +117,29 @@ if(isset($_GET['action']) && $_GET['action']=="add"){
 			</div><!-- /.sidemenu-holder -->	
 			
 			<div class="col-xs-12 col-sm-12 col-md-9 homebanner-holder">
+				<div class="home-hero-intro wow fadeInUp">
+					<span class="home-hero-kicker"><i class="fa fa-leaf"></i> <?php echo APP_NAME; ?> Marketplace</span>
+					<h1 class="home-hero-title">Buy maize products with confidence, while farmers keep using their dedicated portal.</h1>
+					<p class="home-hero-copy">The homepage now stays focused on browsing and discovery. User authentication opens only when you click the login link or action button, while all your current homepage information, navigation, header, and footer stay in place.</p>
+					<div class="home-hero-actions">
+						<a href="login.php" class="home-action-btn primary" data-auth-modal-open>User Login</a>
+						<a href="farmers/login.php" class="home-action-btn secondary">Farmer Login</a>
+					</div>
+					<div class="home-hero-metrics">
+						<div class="home-hero-metric">
+							<strong>Shop</strong>
+							<span>Browse maize, seeds, flour, and related products from one clean homepage.</span>
+						</div>
+						<div class="home-hero-metric">
+							<strong>Track</strong>
+							<span>Access account tools, order status, and checkout only when you need them.</span>
+						</div>
+						<div class="home-hero-metric">
+							<strong>Separate</strong>
+							<span>Farmer authentication remains untouched and continues in its own portal.</span>
+						</div>
+					</div>
+				</div>
 				<!-- ========================================== SECTION – HERO ========================================= -->
 			
 <div id="hero" class="homepage-slider3">
@@ -496,6 +548,108 @@ while ($row=mysqli_fetch_array($ret))
 <?php include('includes/brands-slider.php');?>
 </div>
 </div>
+<div class="auth-modal" data-auth-modal>
+	<div class="auth-modal-dialog">
+		<button type="button" class="auth-modal-close" data-auth-modal-close aria-label="Close authentication dialog">&times;</button>
+		<div class="auth-shell" data-auth-ui data-auth-default-view="login">
+			<div class="auth-card">
+				<div class="auth-grid">
+					<div class="auth-brand-panel">
+						<div class="auth-brand-content">
+							<div>
+								<span class="auth-brand-kicker"><i class="fa fa-leaf"></i> <?php echo APP_NAME; ?> Access</span>
+								<h2 class="auth-brand-title">Sign in only when you need it, without crowding the homepage.</h2>
+								<p class="auth-brand-copy">User login and registration stay available from this modal. Farmers still use the existing farmer login page with no changes to their workflow or interface.</p>
+							</div>
+							<ul class="auth-brand-points">
+								<li><i class="fa fa-shopping-basket"></i> Customer sign in for cart, checkout, and account access</li>
+								<li><i class="fa fa-users"></i> Create an account using the same PHP-compatible fields</li>
+								<li><i class="fa fa-external-link"></i> Dedicated farmer login remains separate</li>
+							</ul>
+						</div>
+					</div>
+					<div class="auth-panel">
+						<div class="auth-topbar">
+							<div class="auth-mode-toggle" role="tablist" aria-label="Homepage authentication mode">
+								<button type="button" class="is-active" data-auth-mode="user">Login as User</button>
+								<button type="button" data-auth-mode="farmer" data-auth-redirect="farmers/login.php">Login as Farmer</button>
+							</div>
+							<div class="auth-view-switch" role="tablist" aria-label="Homepage authentication view">
+								<button type="button" class="is-active" data-auth-view="login">Sign In</button>
+								<button type="button" data-auth-view="register">Create Account</button>
+							</div>
+						</div>
+
+						<div class="auth-panels">
+							<div class="auth-form-panel is-active" data-auth-panel="login">
+								<h2 class="auth-heading">User login</h2>
+								<p class="auth-subheading">Use your existing customer credentials to continue to your cart and order history.</p>
+								<form class="auth-form" method="post" action="login.php">
+									<div class="form-group">
+										<label for="home-user-email">Email Address</label>
+										<input type="email" name="email" class="auth-input" id="home-user-email" placeholder="Enter your email address" required>
+									</div>
+									<div class="form-group">
+										<label for="home-user-password">Password</label>
+										<input type="password" name="password" class="auth-input" id="home-user-password" placeholder="Enter your password" required>
+									</div>
+									<div class="auth-inline">
+										<a href="forgot-password.php">Forgot Password?</a>
+										<a href="#" class="auth-link" data-auth-view="register">Create Account</a>
+									</div>
+									<button type="submit" class="auth-button" name="login">Login</button>
+								</form>
+							</div>
+
+							<div class="auth-form-panel" data-auth-panel="register">
+								<h2 class="auth-heading">Create your account</h2>
+								<p class="auth-subheading">Join using the same customer registration fields your PHP backend already expects.</p>
+								<form class="auth-form" role="form" method="post" action="login.php" name="homeRegister" onSubmit="return valid();">
+									<div class="form-group">
+										<label for="home-fullname">Full Name</label>
+										<input type="text" class="auth-input" id="home-fullname" name="fullname" placeholder="Your full name" required="required">
+									</div>
+									<div class="form-group">
+										<label for="home-register-email">Email Address</label>
+										<input type="email" class="auth-input" id="home-register-email" onBlur="userAvailability()" name="emailid" placeholder="Your email address" required>
+										<span id="home-user-availability-status1" class="auth-availability"></span>
+									</div>
+									<div class="form-group">
+										<label for="home-contactno">Contact No.</label>
+										<input type="text" class="auth-input" id="home-contactno" name="contactno" maxlength="10" placeholder="Your contact number" required>
+									</div>
+									<div class="form-group">
+										<label for="home-password">Password</label>
+										<input type="password" class="auth-input" id="home-password" name="password" placeholder="Create a password" required>
+									</div>
+									<div class="form-group">
+										<label for="home-confirmpassword">Confirm Password</label>
+										<input type="password" class="auth-input" id="home-confirmpassword" name="confirmpassword" placeholder="Confirm your password" required>
+									</div>
+									<button type="submit" name="submit" class="auth-button">Sign Up</button>
+								</form>
+								<div class="auth-benefits">
+									<div class="auth-benefit">
+										<strong>Quick start</strong>
+										<span>Open a customer account without leaving the shopping flow.</span>
+									</div>
+									<div class="auth-benefit">
+										<strong>Track orders</strong>
+										<span>Monitor purchases and status updates with ease.</span>
+									</div>
+									<div class="auth-benefit">
+										<strong>Save details</strong>
+										<span>Reuse your account data during future purchases.</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 <?php include('includes/footer.php');?>
 	
 	<script src="assets/js/jquery-1.11.1.min.js"></script>
@@ -513,6 +667,8 @@ while ($row=mysqli_fetch_array($ret))
     <script src="assets/js/bootstrap-select.min.js"></script>
     <script src="assets/js/wow.min.js"></script>
 	<script src="assets/js/scripts.js"></script>
+	<script src="assets/js/auth-ui.js"></script>
+	<script src="assets/js/home-ui.js"></script>
 
 	<!-- For demo purposes – can be removed on production -->
 	

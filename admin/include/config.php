@@ -1,4 +1,7 @@
 <?php
+if (!defined('APP_NAME')) {
+define('APP_NAME', 'FarmHub');
+}
 define('DB_SERVER','localhost');
 define('DB_USER','root');
 define('DB_PASS' ,'');

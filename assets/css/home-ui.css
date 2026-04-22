@@ -1,0 +1,303 @@
+.home-refresh {
+  background:
+    radial-gradient(circle at top left, rgba(255, 226, 167, 0.25), transparent 24%),
+    linear-gradient(180deg, #f7f1e6 0%, #f4f7ef 20%, #fbfbf8 100%);
+}
+
+.home-refresh .top-bar {
+  background: linear-gradient(90deg, #fff5e2, #f4f1d7) !important;
+  border-bottom: 1px solid rgba(61, 101, 57, 0.08);
+}
+
+.home-refresh .main-header {
+  background: linear-gradient(135deg, #3f8f58, #29583b) !important;
+  height: auto !important;
+  padding: 18px 0 !important;
+  box-shadow: 0 14px 36px rgba(31, 70, 42, 0.18);
+}
+
+.home-refresh .header-nav {
+  box-shadow: 0 8px 24px rgba(20, 39, 22, 0.08);
+}
+
+.home-refresh .search-area .search-field,
+.home-refresh .search-area .search-button {
+  height: 48px;
+}
+
+.home-refresh .body-content {
+  padding-top: 20px;
+}
+
+.home-refresh .homepage-container {
+  position: relative;
+}
+
+.home-refresh .sidebar .side-menu {
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(27, 51, 31, 0.08);
+}
+
+.home-hero-intro {
+  margin-bottom: 24px;
+  padding: 34px 36px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 213, 121, 0.25), transparent 22%),
+    linear-gradient(135deg, rgba(18, 54, 24, 0.94), rgba(54, 110, 64, 0.88));
+  color: #fff;
+  box-shadow: 0 26px 50px rgba(28, 55, 32, 0.18);
+}
+
+.home-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-hero-title {
+  margin: 0 0 12px;
+  max-width: 720px;
+  font-size: 42px;
+  line-height: 1.08;
+  color: #fff;
+  font-weight: 700;
+}
+
+.home-hero-copy {
+  max-width: 690px;
+  margin-bottom: 24px;
+  font-size: 16px;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.home-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.home-action-btn:hover,
+.home-action-btn:focus {
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.home-action-btn.primary {
+  background: #fff3cd;
+  color: #234c2b;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
+}
+
+.home-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.home-hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.home-hero-metric {
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.home-hero-metric strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 24px;
+  color: #fff2c0;
+}
+
+.home-hero-metric span {
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.home-refresh #hero {
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 20px 46px rgba(31, 53, 35, 0.12);
+}
+
+.home-refresh #hero .item {
+  min-height: 360px;
+}
+
+.home-refresh .info-boxes {
+  margin-top: 18px;
+}
+
+.home-refresh .info-boxes-inner {
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 40px rgba(20, 36, 24, 0.08);
+}
+
+.home-refresh .info-box {
+  min-height: 118px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f9fbf7, #f0f6ee);
+  border: 1px solid #e2ecdf;
+}
+
+.home-refresh .scroll-tabs {
+  padding: 26px 28px 30px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 40px rgba(21, 36, 23, 0.08);
+}
+
+.home-refresh .more-info-tab .new-product-title {
+  font-size: 28px;
+  color: #203522;
+}
+
+.home-refresh .nav-tabs.nav-tab-line > li > a {
+  border-radius: 999px;
+  background: #f0f5ee;
+  margin-left: 8px;
+  color: #4d6351;
+  font-weight: 700;
+}
+
+.home-refresh .nav-tabs.nav-tab-line > li.active > a,
+.home-refresh .nav-tabs.nav-tab-line > li > a:hover {
+  background: #2f6b3b;
+  color: #fff;
+}
+
+.home-refresh .products .product {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(25, 40, 28, 0.08);
+  border: 1px solid #edf3ea;
+}
+
+.home-refresh .products .product-info {
+  padding: 18px 18px 12px;
+}
+
+.home-refresh .products .action {
+  padding: 0 18px 18px;
+}
+
+.home-refresh .products .action .btn {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(9, 18, 11, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+.auth-modal.is-open {
+  display: flex;
+}
+
+.auth-modal-dialog {
+  position: relative;
+  width: min(1100px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  border-radius: 26px;
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #203522;
+  font-size: 22px;
+  line-height: 1;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+body.auth-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 991px) {
+  .home-hero-title {
+    font-size: 34px;
+  }
+
+  .home-hero-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-hero-intro {
+    padding: 24px 20px;
+    border-radius: 22px;
+  }
+
+  .home-hero-title {
+    font-size: 28px;
+  }
+
+  .home-refresh .scroll-tabs {
+    padding: 18px 16px 22px;
+    border-radius: 20px;
+  }
+
+  .home-action-btn {
+    width: 100%;
+  }
+
+  .auth-modal {
+    padding: 10px;
+  }
+
+  .auth-modal-dialog {
+    max-height: calc(100vh - 20px);
+  }
+}

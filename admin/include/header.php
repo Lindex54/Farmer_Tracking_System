@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/admin-auth.php';
+
 if (!function_exists('getAppBasePath')) {
 	function getAppBasePath()
 	{
@@ -22,6 +24,10 @@ if (!function_exists('appUrl')) {
 		return getAppBasePath() . $path;
 	}
 }
+
+$portalName = defined('APP_NAME') ? APP_NAME : 'FarmHub';
+$currentRoleLabel = function_exists('getCurrentRoleLabel') ? getCurrentRoleLabel() : 'Admin';
+$currentDisplayName = function_exists('getCurrentDisplayName') ? getCurrentDisplayName() : 'Admin';
 ?>
 <div class="navbar navbar-fixed-top">
 		<div class="navbar-inner" style="background-color:#4fb477;">
@@ -30,14 +36,14 @@ if (!function_exists('appUrl')) {
 					<i class="icon-reorder shaded"></i>
 				</a>
 
-			  	<a class="brand" href="<?php echo appUrl('/admin/todays-orders.php'); ?>" style="text-shadow:none;">
-			  		MaizeHub | Admin
+			  	<a class="brand" href="<?php echo (function_exists('isFarmer') && isFarmer()) ? appUrl('/farmers/batches.php') : appUrl('/admin/todays-orders.php'); ?>" style="text-shadow:none;">
+			  		<?php echo htmlentities($portalName); ?> | <?php echo htmlentities($currentRoleLabel); ?> Portal
 			  	</a>
 
 				<div class="nav-collapse collapse navbar-inverse-collapse">
 					<ul class="nav pull-right">
 						<li><a href="#" style="text-shadow:none; color:#000000;">
-							Admin
+							<?php echo htmlentities($currentDisplayName); ?>
 						</a></li>
 						<li class="nav-user dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">

@@ -2,6 +2,7 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
+$authDefaultView = isset($_POST['submit']) ? 'register' : 'login';
 // Code user Registration
 if(isset($_POST['submit']))
 {
@@ -31,6 +32,8 @@ $extra="my-cart.php";
 $_SESSION['login']=$_POST['email'];
 $_SESSION['id']=$num['id'];
 $_SESSION['username']=$num['name'];
+$_SESSION['role']='user';
+unset($_SESSION['alogin'], $_SESSION['admin_name'], $_SESSION['farmer_id'], $_SESSION['farmer_username'], $_SESSION['farmer_name']);
 $uip=$_SERVER['REMOTE_ADDR'];
 $status=1;
 $log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('".$_SESSION['login']."','$uip','$status')");
@@ -70,7 +73,7 @@ exit();
 	    <meta name="keywords" content="MediaCenter, Template, eCommerce">
 	    <meta name="robots" content="all">
 
-	    <title>Shopping Portal | Signi-in | Signup</title>
+	    <title><?php echo APP_NAME; ?> | Sign in | Sign up</title>
 
 	    <!-- Bootstrap Core CSS -->
 	    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -85,6 +88,7 @@ exit();
 		<link rel="stylesheet" href="assets/css/animate.min.css">
 		<link rel="stylesheet" href="assets/css/rateit.css">
 		<link rel="stylesheet" href="assets/css/bootstrap-select.min.css">
+		<link rel="stylesheet" href="assets/css/auth-ui.css">
 
 		<!-- Demo Purpose Only. Should be removed in production -->
 		<link rel="stylesheet" href="assets/css/config.css">
@@ -122,7 +126,7 @@ function userAvailability() {
 $("#loaderIcon").show();
 jQuery.ajax({
 url: "check_availability.php",
-data:'email='+$("#email").val(),
+data:'email='+$("#register-email").val(),
 type: "POST",
 success:function(data){
 $("#user-availability-status1").html(data);
@@ -167,86 +171,109 @@ error:function (){}
 
 <div class="body-content outer-top-bd">
 	<div class="container">
-		<div class="sign-in-page inner-bottom-sm">
-			<div class="row">
-				<!-- Sign-in -->			
-<div class="col-md-6 col-sm-6 sign-in">
-	<h4 class="">sign in</h4>
-	<p class="">Hello, Welcome to your account.</p>
-	<form class="register-form outer-top-xs" method="post">
-	<span style="color:red;" >
-<?php
-echo htmlentities($_SESSION['errmsg']);
-?>
-<?php
-echo htmlentities($_SESSION['errmsg']="");
-?>
-	</span>
-		<div class="form-group">
-		    <label class="info-title" for="exampleInputEmail1">Email Address <span>*</span></label>
-		    <input type="email" name="email" class="form-control unicase-form-control text-input" id="exampleInputEmail1" >
-		</div>
-	  	<div class="form-group">
-		    <label class="info-title" for="exampleInputPassword1">Password <span>*</span></label>
-		 <input type="password" name="password" class="form-control unicase-form-control text-input" id="exampleInputPassword1" >
-		</div>
-		<div class="radio outer-xs">
-		  	<a href="forgot-password.php" class="forgot-password pull-right">Forgot your Password?</a>
-		</div>
-	  	<button type="submit" class="btn-upper btn btn-primary checkout-page-button" name="login">Login</button>
-	</form>					
-</div>
-<!-- Sign-in -->
+		<div class="auth-page-wrap">
+			<div class="auth-shell" data-auth-ui data-auth-default-view="<?php echo htmlentities($authDefaultView); ?>">
+				<div class="auth-card">
+					<div class="auth-grid">
+						<div class="auth-brand-panel">
+							<div class="auth-brand-content">
+								<div>
+									<span class="auth-brand-kicker"><i class="fa fa-leaf"></i> <?php echo APP_NAME; ?> Portal</span>
+									<h1 class="auth-brand-title">Welcome back to a cleaner way to trade and manage produce.</h1>
+									<p class="auth-brand-copy">Sign in as a customer to shop, track orders, and manage your account. Farmers continue to use their dedicated portal with the existing workflow unchanged.</p>
+								</div>
+								<ul class="auth-brand-points">
+									<li><i class="fa fa-check"></i> Fast checkout for returning customers</li>
+									<li><i class="fa fa-line-chart"></i> Better visibility into orders and activity</li>
+									<li><i class="fa fa-shield"></i> Separate farmer portal for farm operations</li>
+								</ul>
+							</div>
+						</div>
+						<div class="auth-panel">
+							<div class="auth-topbar">
+								<div class="auth-mode-toggle" role="tablist" aria-label="Authentication mode">
+									<button type="button" class="is-active" data-auth-mode="user">Login as User</button>
+									<button type="button" data-auth-mode="farmer" data-auth-redirect="farmers/login.php">Login as Farmer</button>
+								</div>
+								<div class="auth-view-switch" role="tablist" aria-label="Authentication form">
+									<button type="button" class="is-active" data-auth-view="login">Sign In</button>
+									<button type="button" data-auth-view="register">Create Account</button>
+								</div>
+							</div>
 
-<!-- create a new account -->
-<div class="col-md-6 col-sm-6 create-new-account">
-	<h4 class="checkout-subtitle">create a new account</h4>
-	<p class="text title-tag-line">Create your own Shopping account.</p>
-	<form class="register-form outer-top-xs" role="form" method="post" name="register" onSubmit="return valid();">
-<div class="form-group">
-	    	<label class="info-title" for="fullname">Full Name <span>*</span></label>
-	    	<input type="text" class="form-control unicase-form-control text-input" id="fullname" name="fullname" required="required">
-	  	</div>
+							<div class="auth-panels">
+								<div class="auth-form-panel is-active" data-auth-panel="login">
+									<h2 class="auth-heading">User login</h2>
+									<p class="auth-subheading">Use your existing account details to continue to cart, orders, and profile management.</p>
+<?php if (!empty($_SESSION['errmsg'])) { ?>
+									<div class="auth-status error"><?php echo htmlentities($_SESSION['errmsg']); ?></div>
+<?php } ?>
+<?php $_SESSION['errmsg']=""; ?>
+									<form class="auth-form" method="post">
+										<div class="form-group">
+											<label for="user-email">Email Address</label>
+											<input type="email" name="email" class="auth-input" id="user-email" placeholder="Enter your email address" required>
+										</div>
+										<div class="form-group">
+											<label for="user-password">Password</label>
+											<input type="password" name="password" class="auth-input" id="user-password" placeholder="Enter your password" required>
+										</div>
+										<div class="auth-inline">
+											<a href="forgot-password.php">Forgot Password?</a>
+											<a href="#" class="auth-link" data-auth-view="register">Create Account</a>
+										</div>
+										<button type="submit" class="auth-button" name="login">Login</button>
+									</form>
+									<p class="auth-footnote">Farmer accounts use the separate farmer portal for sign-in.</p>
+								</div>
 
-
-		<div class="form-group">
-	    	<label class="info-title" for="exampleInputEmail2">Email Address <span>*</span></label>
-	    	<input type="email" class="form-control unicase-form-control text-input" id="email" onBlur="userAvailability()" name="emailid" required >
-	    	       <span id="user-availability-status1" style="font-size:12px;"></span>
-	  	</div>
-
-<div class="form-group">
-	    	<label class="info-title" for="contactno">Contact No. <span>*</span></label>
-	    	<input type="text" class="form-control unicase-form-control text-input" id="contactno" name="contactno" maxlength="10" required >
-	  	</div>
-
-<div class="form-group">
-	    	<label class="info-title" for="password">Password. <span>*</span></label>
-	    	<input type="password" class="form-control unicase-form-control text-input" id="password" name="password"  required >
-	  	</div>
-
-<div class="form-group">
-	    	<label class="info-title" for="confirmpassword">Confirm Password. <span>*</span></label>
-	    	<input type="password" class="form-control unicase-form-control text-input" id="confirmpassword" name="confirmpassword" required >
-	  	</div>
-
-
-	  	<button type="submit" name="submit" class="btn-upper btn btn-primary checkout-page-button" id="submit">Sign Up</button>
-	</form>
-	<span class="checkout-subtitle outer-top-xs">Sign Up Today And You'll Be Able To :  </span>
-	<div class="checkbox">
-	  	<label class="checkbox">
-		  	Speed your way through the checkout.
-		</label>
-		<label class="checkbox">
-		Track your orders easily.
-		</label>
-		<label class="checkbox">
- Keep a record of all your purchases.
-		</label>
-	</div>
-</div>	
-<!-- create a new account -->			</div><!-- /.row -->
+								<div class="auth-form-panel" data-auth-panel="register">
+									<h2 class="auth-heading">Create your account</h2>
+									<p class="auth-subheading">Register once to start shopping, save details, and follow your orders without changing any of the existing backend flow.</p>
+									<form class="auth-form" role="form" method="post" name="register" onSubmit="return valid();">
+										<div class="form-group">
+											<label for="fullname">Full Name</label>
+											<input type="text" class="auth-input" id="fullname" name="fullname" placeholder="Your full name" required="required">
+										</div>
+										<div class="form-group">
+											<label for="register-email">Email Address</label>
+											<input type="email" class="auth-input" id="register-email" onBlur="userAvailability()" name="emailid" placeholder="Your email address" required>
+											<span id="user-availability-status1" class="auth-availability"></span>
+										</div>
+										<div class="form-group">
+											<label for="contactno">Contact No.</label>
+											<input type="text" class="auth-input" id="contactno" name="contactno" maxlength="10" placeholder="Your contact number" required>
+										</div>
+										<div class="form-group">
+											<label for="password">Password</label>
+											<input type="password" class="auth-input" id="password" name="password" placeholder="Create a password" required>
+										</div>
+										<div class="form-group">
+											<label for="confirmpassword">Confirm Password</label>
+											<input type="password" class="auth-input" id="confirmpassword" name="confirmpassword" placeholder="Confirm your password" required>
+										</div>
+										<button type="submit" name="submit" class="auth-button" id="submit">Sign Up</button>
+									</form>
+									<div class="auth-benefits">
+										<div class="auth-benefit">
+											<strong>Faster checkout</strong>
+											<span>Move through purchases with fewer repeated steps.</span>
+										</div>
+										<div class="auth-benefit">
+											<strong>Order tracking</strong>
+											<span>See status updates and order details in one place.</span>
+										</div>
+										<div class="auth-benefit">
+											<strong>Saved history</strong>
+											<span>Keep a clear record of previous purchases.</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 <?php include('includes/brands-slider.php');?>
 </div>
@@ -264,9 +291,10 @@ echo htmlentities($_SESSION['errmsg']="");
 	<script src="assets/js/bootstrap-slider.min.js"></script>
     <script src="assets/js/jquery.rateit.min.js"></script>
     <script type="text/javascript" src="assets/js/lightbox.min.js"></script>
-    <script src="assets/js/bootstrap-select.min.js"></script>
+	<script src="assets/js/bootstrap-select.min.js"></script>
     <script src="assets/js/wow.min.js"></script>
 	<script src="assets/js/scripts.js"></script>
+	<script src="assets/js/auth-ui.js"></script>
 
 	<!-- For demo purposes – can be removed on production -->
 	
