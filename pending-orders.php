@@ -2,11 +2,8 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
-if(strlen($_SESSION['login'])==0)
-    {   
-header('location:login.php');
-}
-else{
+requireUserSession($con, 'login.php');
+{
 	if (isset($_GET['id'])) {
 
 		mysqli_query($con,"delete from orders  where userId='".$_SESSION['id']."' and paymentMethod is null and id='".$_GET['id']."' ");
@@ -214,4 +211,3 @@ while($row=mysqli_fetch_array($query))
 	<!-- For demo purposes – can be removed on production : End -->
 </body>
 </html>
-<?php } ?>

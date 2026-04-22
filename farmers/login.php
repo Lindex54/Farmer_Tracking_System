@@ -3,6 +3,7 @@ session_start();
 error_reporting(0);
 include('../admin/include/config.php');
 include('../admin/include/admin-auth.php');
+require_once __DIR__ . '/../admin/include/audit.php';
 
 if (isset($_SESSION['role']) && strtolower((string)$_SESSION['role']) === 'farmer') {
     header('Location: ' . appUrl('/farmers/batches.php'));
@@ -61,6 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_SESSION['farmer_username'] = (string)$farmer['username'];
                             $_SESSION['farmer_name'] = isset($farmer['name']) ? (string)$farmer['name'] : (string)$farmer['username'];
                             unset($_SESSION['alogin'], $_SESSION['admin_name']);
+                            registerTrackedSession($con, 'farmer', $_SESSION['farmer_name'], 'Farmer');
+                            writeAuditLog($con, 'farmer', $_SESSION['farmer_name'], 'login', 'success', 'Farmer signed in successfully.');
 
                             header('Location: ' . appUrl('/farmers/batches.php'));
                             mysqli_stmt_close($stmt);
@@ -68,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         } else {
                             $errorMessage = 'Incorrect password';
                             $showPasswordField = true;
+                            writeAuditLog($con, 'farmer', $username, 'login', 'failed', 'Incorrect farmer password supplied.');
                         }
                     } else {
                         $showPasswordField = true;
@@ -77,6 +81,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             mysqli_stmt_close($stmt);
         }
+    }
+
+    if ($errorMessage === 'Username not found') {
+        writeAuditLog($con, 'farmer', $username, 'login', 'failed', 'Farmer username not found.');
     }
 }
 ?>

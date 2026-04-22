@@ -2,6 +2,7 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
+require_once __DIR__ . '/admin/include/audit.php';
 if(isset($_POST['submit'])){
 		if(!empty($_SESSION['cart'])){
 		foreach($_POST['quantity'] as $key => $val){
@@ -46,9 +47,8 @@ else{
 
 		foreach($value as $qty=> $val34){
 
-
-
 mysqli_query($con,"insert into orders(userId,productId,quantity) values('".$_SESSION['id']."','$qty','$val34')");
+writeAuditLog($con, 'user', !empty($_SESSION['username']) ? $_SESSION['username'] : $_SESSION['login'], 'order_created', 'success', 'Customer placed order for product ID ' . $qty . ' with quantity ' . $val34 . '.');
 header('location:bill-ship-addresses2.php');
 }
 }

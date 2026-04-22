@@ -22,7 +22,7 @@ $isBatchesPage = (strpos($currentScript, '/farmers/batches.php') !== false || $a
 		</ul>
 		<ul class="widget widget-menu unstyled">
 			<li>
-				<a href="<?php echo appUrl('/admin/logout.php'); ?>">
+				<a href="<?php echo appUrl('/farmers/logout.php'); ?>">
 					<i class="menu-icon icon-signout"></i>
 					Logout
 				</a>

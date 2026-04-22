@@ -2,11 +2,9 @@
 session_start();
 
 include_once 'include/config.php';
-if(strlen($_SESSION['alogin'])==0)
-  { 
-header('location:index.php');
-}
-else{
+include('include/admin-auth.php');
+require_once __DIR__ . '/include/audit.php';
+requireAdmin(appUrl('/admin/index.php'));
 $oid=intval($_GET['oid']);
 if(isset($_POST['submit2'])){
 $status=$_POST['status'];
@@ -14,6 +12,7 @@ $remark=$_POST['remark'];//space char
 
 $query=mysqli_query($con,"insert into ordertrackhistory(orderId,status,remark) values('$oid','$status','$remark')");
 $sql=mysqli_query($con,"update orders set orderStatus='$status' where id='$oid'");
+writeAuditLog($con, 'admin', !empty($_SESSION['admin_name']) ? $_SESSION['admin_name'] : $_SESSION['alogin'], 'order_status_updated', 'success', 'Administrator updated order #' . $oid . ' to status "' . $status . '". Remark: ' . $remark);
 echo "<script>alert('Order updated sucessfully...');</script>";
 //}
 }
@@ -124,6 +123,5 @@ $st='Delivered';
 
 </body>
 </html>
-<?php } ?>
 
      

@@ -2,11 +2,7 @@
 session_start();
 //error_reporting(0);
 include('includes/config.php');
-if(strlen($_SESSION['login'])==0)
-    {   
-header('location:index.php');
-}
-else{
+requireUserSession($con, 'index.php');
 	// code for billing address updation
 	if(isset($_POST['update']))
 	{
@@ -268,4 +264,3 @@ while($row=mysqli_fetch_array($query))
 	</script>
 </body>
 </html>
-<?php } ?>

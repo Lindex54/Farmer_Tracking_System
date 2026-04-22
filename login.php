@@ -2,6 +2,7 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
+require_once __DIR__ . '/admin/include/audit.php';
 $authDefaultView = isset($_POST['submit']) ? 'register' : 'login';
 // Code user Registration
 if(isset($_POST['submit']))
@@ -34,6 +35,8 @@ $_SESSION['id']=$num['id'];
 $_SESSION['username']=$num['name'];
 $_SESSION['role']='user';
 unset($_SESSION['alogin'], $_SESSION['admin_name'], $_SESSION['farmer_id'], $_SESSION['farmer_username'], $_SESSION['farmer_name']);
+registerTrackedSession($con, 'user', $_SESSION['username'], 'Customer');
+writeAuditLog($con, 'user', $_POST['email'], 'login', 'success', 'Customer signed in successfully.');
 $uip=$_SERVER['REMOTE_ADDR'];
 $status=1;
 $log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('".$_SESSION['login']."','$uip','$status')");
@@ -46,6 +49,7 @@ else
 {
 $extra="login.php";
 $email=$_POST['email'];
+writeAuditLog($con, 'user', $email, 'login', 'failed', 'Failed customer login attempt.');
 $uip=$_SERVER['REMOTE_ADDR'];
 $status=0;
 $log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('$email','$uip','$status')");

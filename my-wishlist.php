@@ -2,11 +2,8 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
-if(strlen($_SESSION['login'])==0)
-    {   
-header('location:index.php');
-}
-else{
+requireUserSession($con, 'index.php');
+{
 // Code forProduct deletion from  wishlist	
 $wid=intval($_GET['del']);
 if(isset($_GET['del']))
@@ -207,4 +204,3 @@ $num=mysqli_num_rows($rt);
 	</script>
 </body>
 </html>
-<?php } ?>

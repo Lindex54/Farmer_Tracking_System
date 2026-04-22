@@ -2,6 +2,7 @@
 session_start();
 error_reporting(0);
 include("include/config.php");
+require_once __DIR__ . '/include/audit.php';
 if(isset($_POST['submit']))
 {
 	$username=$_POST['username'];
@@ -10,12 +11,14 @@ $ret=mysqli_query($con,"SELECT * FROM admin WHERE username='$username' and passw
 $num=mysqli_fetch_array($ret);
 if($num>0)
 {
-$extra="todays-orders.php";//
+$extra="dashboard.php";//
 $_SESSION['alogin']=$_POST['username'];
 $_SESSION['id']=$num['id'];
 $_SESSION['admin_name']=$num['username'];
 $_SESSION['role']='admin';
 unset($_SESSION['farmer_id'], $_SESSION['farmer_username'], $_SESSION['farmer_name']);
+registerTrackedSession($con, 'admin', $num['username'], 'Administrator');
+writeAuditLog($con, 'admin', $username, 'login', 'success', 'Administrator signed in successfully.');
 $host=$_SERVER['HTTP_HOST'];
 $uri=rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
 header("location:http://$host$uri/$extra");
@@ -24,6 +27,7 @@ exit();
 else
 {
 $_SESSION['errmsg']="Invalid username or password";
+writeAuditLog($con, 'admin', $username, 'login', 'failed', 'Failed administrator login attempt.');
 $extra="index.php";
 $host  = $_SERVER['HTTP_HOST'];
 $uri  = rtrim(dirname($_SERVER['PHP_SELF']),'/\\');

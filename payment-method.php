@@ -2,11 +2,7 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
-if(strlen($_SESSION['login'])==0)
-    {   
-header('location:login.php');
-}
-else{
+requireUserSession($con, 'login.php');
 	if (isset($_POST['submit'])) {
 
 		mysqli_query($con,"update orders set 	paymentMethod='".$_POST['paymethod']."' where userId='".$_SESSION['id']."' and paymentMethod is null ");
@@ -155,4 +151,3 @@ else{
 
 </body>
 </html>
-<?php } ?>

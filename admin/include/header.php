@@ -36,7 +36,7 @@ $currentDisplayName = function_exists('getCurrentDisplayName') ? getCurrentDispl
 					<i class="icon-reorder shaded"></i>
 				</a>
 
-			  	<a class="brand" href="<?php echo (function_exists('isFarmer') && isFarmer()) ? appUrl('/farmers/batches.php') : appUrl('/admin/todays-orders.php'); ?>" style="text-shadow:none;">
+			  	<a class="brand" href="<?php echo (function_exists('isFarmer') && isFarmer()) ? appUrl('/farmers/batches.php') : appUrl('/admin/dashboard.php'); ?>" style="text-shadow:none;">
 			  		<?php echo htmlentities($portalName); ?> | <?php echo htmlentities($currentRoleLabel); ?> Portal
 			  	</a>
 
@@ -53,7 +53,7 @@ $currentDisplayName = function_exists('getCurrentDisplayName') ? getCurrentDispl
 							<ul class="dropdown-menu">
 								<li><a href="<?php echo appUrl('/admin/change-password.php'); ?>">Change Password</a></li>
 								<li class="divider"></li>
-								<li><a href="<?php echo appUrl('/admin/logout.php'); ?>">Logout</a></li>
+								<li><a href="<?php echo (function_exists('isFarmer') && isFarmer()) ? appUrl('/farmers/logout.php') : appUrl('/admin/logout.php'); ?>">Logout</a></li>
 							</ul>
 						</li>
 					</ul>

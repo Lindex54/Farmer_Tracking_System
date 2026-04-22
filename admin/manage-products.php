@@ -2,17 +2,17 @@
 <?php
 session_start();
 include('include/config.php');
-if(strlen($_SESSION['alogin'])==0)
-	{	
-header('location:index.php');
-}
-else{
+include('include/admin-auth.php');
+require_once __DIR__ . '/include/audit.php';
+requireAdmin(appUrl('/admin/index.php'));
 date_default_timezone_set('Asia/Kolkata');// change according timezone
 $currentTime = date( 'd-m-Y h:i:s A', time () );
 
 if(isset($_GET['del']))
 		  {
-		          mysqli_query($con,"delete from products where id = '".$_GET['id']."'");
+                  $productId = intval($_GET['id']);
+		          mysqli_query($con,"delete from products where id = '".$productId."'");
+                  writeAuditLog($con, 'admin', !empty($_SESSION['admin_name']) ? $_SESSION['admin_name'] : $_SESSION['alogin'], 'product_deleted', 'success', 'Administrator deleted product ID ' . $productId . '.');
                   $_SESSION['delmsg']="Product deleted !!";
 		  }
 
@@ -116,4 +116,3 @@ while($row=mysqli_fetch_array($query))
 		} );
 	</script>
 </body>
-<?php } ?>

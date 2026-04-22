@@ -25,6 +25,7 @@ if (!function_exists('appUrl')) {
 
 $currentScript = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
 $activePage = isset($activePage) ? $activePage : '';
+$isDashboardPage = (strpos($currentScript, 'dashboard.php') !== false || $activePage === 'dashboard');
 
 $isOrdersPage = (
     strpos($currentScript, 'todays-orders.php') !== false ||
@@ -38,11 +39,17 @@ $isSubCategoryPage = strpos($currentScript, 'subcategory.php') !== false;
 $isInsertProductPage = strpos($currentScript, 'insert-product.php') !== false;
 $isManageProductsPage = strpos($currentScript, 'manage-products.php') !== false;
 $isFarmersPage = (strpos($currentScript, '/farmers/') !== false || $activePage === 'farmers');
-$isUserLogsPage = strpos($currentScript, 'user-logs.php') !== false;
+$isUserLogsPage = (strpos($currentScript, 'user-logs.php') !== false || strpos($currentScript, 'audit-logs.php') !== false || $activePage === 'audit-logs');
 ?>
 <div class="span3">
 	<div class="sidebar">
 		<ul class="widget widget-menu unstyled">
+			<li class="<?php echo $isDashboardPage ? 'active' : ''; ?>">
+				<a href="<?php echo appUrl('/admin/dashboard.php'); ?>">
+					<i class="menu-icon icon-dashboard"></i>
+					Dashboard
+				</a>
+			</li>
 			<li class="<?php echo $isOrdersPage ? 'active' : ''; ?>">
 				<a class="<?php echo $isOrdersPage ? '' : 'collapsed'; ?>" data-toggle="collapse" href="#togglePages">
 					<i class="menu-icon icon-cog"></i>
@@ -111,7 +118,7 @@ $num1 = mysqli_num_rows($rt);
 		</ul>
 
 		<ul class="widget widget-menu unstyled">
-			<li class="<?php echo $isUserLogsPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/admin/user-logs.php'); ?>"><i class="menu-icon icon-tasks"></i>User Login Log </a></li>
+			<li class="<?php echo $isUserLogsPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/admin/audit-logs.php'); ?>"><i class="menu-icon icon-time"></i>Audit Logs </a></li>
 			<li>
 				<a href="<?php echo appUrl('/admin/logout.php'); ?>">
 					<i class="menu-icon icon-signout"></i>

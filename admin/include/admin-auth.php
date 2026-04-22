@@ -105,31 +105,62 @@ function getCurrentDisplayName()
 
 function requireAdmin($redirectTo = null)
 {
+    global $con;
+
     if (isAdmin()) {
-        return;
+        $adminIdentifier = '';
+        if (!empty($_SESSION['admin_name'])) {
+            $adminIdentifier = (string) $_SESSION['admin_name'];
+        } elseif (!empty($_SESSION['alogin'])) {
+            $adminIdentifier = (string) $_SESSION['alogin'];
+        }
+
+        if ($adminIdentifier !== '' && validateTrackedSession($con, 'admin', $adminIdentifier)) {
+            touchTrackedSession($con);
+            return;
+        }
     }
 
     if ($redirectTo === null || $redirectTo === '') {
         $redirectTo = appUrl('/admin/index.php');
     }
 
-    $_SESSION['errmsg'] = 'Unauthorized access.';
-    header('Location: ' . $redirectTo);
-    exit();
+    $adminIdentifier = !empty($_SESSION['alogin']) ? (string) $_SESSION['alogin'] : '';
+    invalidateCurrentSessionWithAudit($con, 'admin', $adminIdentifier, 'Unauthorized or invalid administrator session.', $redirectTo);
 }
 
 function requireAdminOrFarmer($redirectTo = null)
 {
-    if (isAdminOrFarmer()) {
-        return;
+    global $con;
+
+    if (isAdmin()) {
+        $adminIdentifier = !empty($_SESSION['admin_name']) ? (string) $_SESSION['admin_name'] : (string) $_SESSION['alogin'];
+        if ($adminIdentifier !== '' && validateTrackedSession($con, 'admin', $adminIdentifier)) {
+            touchTrackedSession($con);
+            return;
+        }
+    }
+
+    if (isFarmer()) {
+        $farmerIdentifier = !empty($_SESSION['farmer_name']) ? (string) $_SESSION['farmer_name'] : (string) $_SESSION['farmer_username'];
+        if ($farmerIdentifier !== '' && validateTrackedSession($con, 'farmer', $farmerIdentifier)) {
+            touchTrackedSession($con);
+            return;
+        }
     }
 
     if ($redirectTo === null || $redirectTo === '') {
         $redirectTo = appUrl('/admin/index.php');
     }
 
-    $_SESSION['errmsg'] = 'Unauthorized access.';
-    header('Location: ' . $redirectTo);
-    exit();
+    $actorType = isFarmer() ? 'farmer' : 'admin';
+    $actorIdentifier = '';
+    if ($actorType === 'farmer') {
+        $actorIdentifier = !empty($_SESSION['farmer_name']) ? (string) $_SESSION['farmer_name'] : (string) $_SESSION['farmer_username'];
+    } else {
+        $actorIdentifier = !empty($_SESSION['admin_name']) ? (string) $_SESSION['admin_name'] : (string) $_SESSION['alogin'];
+    }
+
+    invalidateCurrentSessionWithAudit($con, $actorType, $actorIdentifier, 'Unauthorized or invalid protected session.', $redirectTo);
 }
 ?>

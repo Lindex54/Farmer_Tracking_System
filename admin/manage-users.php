@@ -2,11 +2,8 @@
 <?php
 session_start();
 include('include/config.php');
-if(strlen($_SESSION['alogin'])==0)
-	{	
-header('location:index.php');
-}
-else{
+include('include/admin-auth.php');
+requireAdmin(appUrl('/admin/index.php'));
 date_default_timezone_set('Asia/Kolkata');// change according timezone
 $currentTime = date( 'd-m-Y h:i:s A', time () );
 
@@ -115,4 +112,3 @@ while($row=mysqli_fetch_array($query))
 		} );
 	</script>
 </body>
-<?php } ?>

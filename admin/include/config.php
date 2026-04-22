@@ -2,6 +2,7 @@
 if (!defined('APP_NAME')) {
 define('APP_NAME', 'FarmHub');
 }
+require_once dirname(__DIR__, 2) . '/includes/session-security.php';
 define('DB_SERVER','localhost');
 define('DB_USER','root');
 define('DB_PASS' ,'');
