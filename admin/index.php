@@ -5,11 +5,20 @@ include("include/config.php");
 require_once __DIR__ . '/include/audit.php';
 if(isset($_POST['submit']))
 {
-	$username=$_POST['username'];
-	$password=$_POST['password'];
-$ret=mysqli_query($con,"SELECT * FROM admin WHERE username='$username' and password='$password'");
-$num=mysqli_fetch_array($ret);
-if($num>0)
+	$username=trim((string)$_POST['username']);
+	$password=(string)$_POST['password'];
+    $num = null;
+
+    $stmt = mysqli_prepare($con, "SELECT id, username FROM admin WHERE username = ? AND password = ? LIMIT 1");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, 'ss', $username, $password);
+        if (mysqli_stmt_execute($stmt)) {
+            $result = mysqli_stmt_get_result($stmt);
+            $num = $result ? mysqli_fetch_assoc($result) : null;
+        }
+        mysqli_stmt_close($stmt);
+    }
+if($num)
 {
 $extra="dashboard.php";//
 $_SESSION['alogin']=$_POST['username'];

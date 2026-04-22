@@ -10,8 +10,7 @@ if (isset($_SESSION['role']) && strtolower((string)$_SESSION['role']) === 'farme
     exit();
 }
 
-$status = isset($_GET['status']) ? trim((string)$_GET['status']) : '';
-$message = isset($_GET['message']) ? trim((string)$_GET['message']) : '';
+$flashMessage = pullFlashMessage('farmer_login');
 
 $username = '';
 $errorMessage = '';
@@ -45,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $hasPassword = isset($farmer['password']) && trim((string)$farmer['password']) !== '';
 
                     if (!$hasPassword) {
-                        header('Location: ' . appUrl('/farmers/create_password.php?username=' . urlencode($username)));
+                        $_SESSION['pending_farmer_username'] = $username;
+                        header('Location: ' . appUrl('/farmers/create_password.php'));
                         mysqli_stmt_close($stmt);
                         exit();
                     }
@@ -125,10 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 							<h3>Farmer Sign In</h3>
 						</div>
 						<div class="module-body">
-<?php if ($message !== '') { ?>
-							<div class="alert <?php echo ($status === 'success') ? 'alert-success' : 'alert-error'; ?>">
+<?php if ($flashMessage && !empty($flashMessage['message'])) { ?>
+							<div class="alert <?php echo ($flashMessage['status'] === 'success') ? 'alert-success' : 'alert-error'; ?>">
 								<button type="button" class="close" data-dismiss="alert">x</button>
-								<?php echo htmlentities($message); ?>
+								<?php echo htmlentities($flashMessage['message']); ?>
 							</div>
 <?php } ?>
 <?php if ($errorMessage !== '') { ?>

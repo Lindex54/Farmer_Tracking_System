@@ -3,11 +3,15 @@ session_start();
 error_reporting(0);
 include('includes/config.php');
 requireUserSession($con, 'login.php');
-{
 	if (isset($_GET['id'])) {
-
-		mysqli_query($con,"delete from orders  where userId='".$_SESSION['id']."' and paymentMethod is null and id='".$_GET['id']."' ");
-		;
+		$userId = (int) $_SESSION['id'];
+		$orderId = (int) $_GET['id'];
+		$stmt = mysqli_prepare($con,"DELETE FROM orders WHERE userId = ? AND paymentMethod IS NULL AND id = ?");
+		if ($stmt) {
+			mysqli_stmt_bind_param($stmt, 'ii', $userId, $orderId);
+			mysqli_stmt_execute($stmt);
+			mysqli_stmt_close($stmt);
+		}
 
 	}
 

@@ -3,12 +3,18 @@ session_start();
 error_reporting(0);
 include('includes/config.php');
 requireUserSession($con, 'index.php');
-{
 	if(isset($_POST['update']))
 	{
-		$name=$_POST['name'];
-		$contactno=$_POST['contactno'];
-		$query=mysqli_query($con,"update users set name='$name',contactno='$contactno' where id='".$_SESSION['id']."'");
+		$name=trim((string)$_POST['name']);
+		$contactno=trim((string)$_POST['contactno']);
+		$userId = (int) $_SESSION['id'];
+		$stmt = mysqli_prepare($con,"UPDATE users SET name = ?, contactno = ? WHERE id = ?");
+		$query = false;
+		if ($stmt) {
+			mysqli_stmt_bind_param($stmt, 'ssi', $name, $contactno, $userId);
+			$query = mysqli_stmt_execute($stmt);
+			mysqli_stmt_close($stmt);
+		}
 		if($query)
 		{
 echo "<script>alert('Your info has been updated');</script>";
@@ -22,11 +28,27 @@ $currentTime = date( 'd-m-Y h:i:s A', time () );
 
 if(isset($_POST['submit']))
 {
-$sql=mysqli_query($con,"SELECT password FROM  users where password='".md5($_POST['cpass'])."' && id='".$_SESSION['id']."'");
-$num=mysqli_fetch_array($sql);
-if($num>0)
+$currentPassword = md5($_POST['cpass']);
+$newPassword = md5($_POST['newpass']);
+$userId = (int) $_SESSION['id'];
+$stmt = mysqli_prepare($con,"SELECT password FROM users WHERE password = ? AND id = ? LIMIT 1");
+$num = null;
+if ($stmt) {
+mysqli_stmt_bind_param($stmt, 'si', $currentPassword, $userId);
+if (mysqli_stmt_execute($stmt)) {
+	$result = mysqli_stmt_get_result($stmt);
+	$num = $result ? mysqli_fetch_assoc($result) : null;
+}
+mysqli_stmt_close($stmt);
+}
+if($num)
 {
- $con=mysqli_query($con,"update students set password='".md5($_POST['newpass'])."', updationDate='$currentTime' where id='".$_SESSION['id']."'");
+ $stmt = mysqli_prepare($con,"UPDATE users SET password = ? WHERE id = ?");
+ if ($stmt) {
+ mysqli_stmt_bind_param($stmt, 'si', $newPassword, $userId);
+ mysqli_stmt_execute($stmt);
+ mysqli_stmt_close($stmt);
+ }
 echo "<script>alert('Password Changed Successfully !!');</script>";
 }
 else

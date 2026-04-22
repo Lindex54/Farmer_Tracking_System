@@ -12,15 +12,15 @@ if (isset($_SESSION['role']) && strtolower((string)$_SESSION['role']) === 'farme
 $username = '';
 $errorMessage = '';
 
-if (isset($_GET['username'])) {
-    $username = trim((string)$_GET['username']);
+if (isset($_SESSION['pending_farmer_username'])) {
+    $username = trim((string)$_SESSION['pending_farmer_username']);
+    unset($_SESSION['pending_farmer_username']);
 } elseif (isset($_POST['username'])) {
     $username = trim((string)$_POST['username']);
 }
 
 if ($username === '') {
-    header('Location: ' . appUrl('/farmers/login.php?status=error&message=' . urlencode('Username is required.')));
-    exit();
+    redirectWithFlash(appUrl('/farmers/login.php'), 'error', 'Username is required.', 'farmer_login');
 }
 
 if (!$con) {
@@ -39,15 +39,13 @@ if (!$con) {
 
             if (!$farmer) {
                 mysqli_stmt_close($checkStmt);
-                header('Location: ' . appUrl('/farmers/login.php?status=error&message=' . urlencode('Username not found')));
-                exit();
+                redirectWithFlash(appUrl('/farmers/login.php'), 'error', 'Username not found', 'farmer_login');
             }
 
             $hasPassword = isset($farmer['password']) && trim((string)$farmer['password']) !== '';
             if ($hasPassword) {
                 mysqli_stmt_close($checkStmt);
-                header('Location: ' . appUrl('/farmers/login.php?status=success&message=' . urlencode('Password already exists. Please sign in.')));
-                exit();
+                redirectWithFlash(appUrl('/farmers/login.php'), 'success', 'Password already exists. Please sign in.', 'farmer_login');
             }
         }
         mysqli_stmt_close($checkStmt);
@@ -79,8 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errorMessage === '') {
 
                 if (mysqli_stmt_execute($updateStmt) && mysqli_stmt_affected_rows($updateStmt) > 0) {
                     mysqli_stmt_close($updateStmt);
-                    header('Location: ' . appUrl('/farmers/login.php?status=success&message=' . urlencode('Password created successfully. Please sign in.')));
-                    exit();
+                    redirectWithFlash(appUrl('/farmers/login.php'), 'success', 'Password created successfully. Please sign in.', 'farmer_login');
                 }
 
                 $errorMessage = 'Unable to set password. It may have already been set.';

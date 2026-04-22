@@ -18,7 +18,13 @@ closeTrackedSession($con);
 $_SESSION['login']=="";
 date_default_timezone_set('Asia/Kolkata');
 $ldate=date( 'd-m-Y h:i:s A', time () );
-mysqli_query($con,"UPDATE userlog  SET logout = '$ldate' WHERE userEmail = '".$_SESSION['login']."' ORDER BY id DESC LIMIT 1");
+$logoutEmail = isset($_SESSION['login']) ? (string) $_SESSION['login'] : '';
+$stmt = mysqli_prepare($con,"UPDATE userlog SET logout = ? WHERE userEmail = ? ORDER BY id DESC LIMIT 1");
+if ($stmt) {
+mysqli_stmt_bind_param($stmt, 'ss', $ldate, $logoutEmail);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_close($stmt);
+}
 session_unset();
 $_SESSION['errmsg']="You have successfully logout";
 ?>

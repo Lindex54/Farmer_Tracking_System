@@ -3,18 +3,27 @@ session_start();
 error_reporting(0);
 include('includes/config.php');
 requireUserSession($con, 'index.php');
-{
 // Code forProduct deletion from  wishlist	
 $wid=intval($_GET['del']);
 if(isset($_GET['del']))
 {
-$query=mysqli_query($con,"delete from wishlist where id='$wid'");
+$stmt = mysqli_prepare($con,"DELETE FROM wishlist WHERE id = ?");
+if ($stmt) {
+mysqli_stmt_bind_param($stmt, 'i', $wid);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_close($stmt);
+}
 }
 
 
 if(isset($_GET['action']) && $_GET['action']=="add"){
 	$id=intval($_GET['id']);
-	$query=mysqli_query($con,"delete from wishlist where productId='$id'");
+	$stmt = mysqli_prepare($con,"DELETE FROM wishlist WHERE productId = ?");
+	if ($stmt) {
+		mysqli_stmt_bind_param($stmt, 'i', $id);
+		mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+	}
 	if(isset($_SESSION['cart'][$id])){
 		$_SESSION['cart'][$id]['quantity']++;
 	}else{

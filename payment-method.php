@@ -4,8 +4,14 @@ error_reporting(0);
 include('includes/config.php');
 requireUserSession($con, 'login.php');
 	if (isset($_POST['submit'])) {
-
-		mysqli_query($con,"update orders set 	paymentMethod='".$_POST['paymethod']."' where userId='".$_SESSION['id']."' and paymentMethod is null ");
+		$paymentMethod = trim((string) $_POST['paymethod']);
+		$userId = (int) $_SESSION['id'];
+		$stmt = mysqli_prepare($con, "UPDATE orders SET paymentMethod = ? WHERE userId = ? AND paymentMethod IS NULL");
+		if ($stmt) {
+			mysqli_stmt_bind_param($stmt, 'si', $paymentMethod, $userId);
+			mysqli_stmt_execute($stmt);
+			mysqli_stmt_close($stmt);
+		}
 		unset($_SESSION['cart']);
 		header('location:order-history.php');
 

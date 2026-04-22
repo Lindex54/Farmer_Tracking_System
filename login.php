@@ -7,11 +7,24 @@ $authDefaultView = isset($_POST['submit']) ? 'register' : 'login';
 // Code user Registration
 if(isset($_POST['submit']))
 {
-$name=$_POST['fullname'];
-$email=$_POST['emailid'];
-$contactno=$_POST['contactno'];
+$name=trim((string)$_POST['fullname']);
+$email=trim((string)$_POST['emailid']);
+$contactno=trim((string)$_POST['contactno']);
 $password=md5($_POST['password']);
-$query=mysqli_query($con,"insert into users(name,email,contactno,password) values('$name','$email','$contactno','$password')");
+$existingUser = fetchUserByEmail($con, $email);
+if($existingUser)
+{
+	echo "<script>alert('An account with this email already exists.');</script>";
+}
+else
+{
+$stmt = mysqli_prepare($con, "INSERT INTO users(name,email,contactno,password) VALUES (?, ?, ?, ?)");
+$query = false;
+if ($stmt) {
+mysqli_stmt_bind_param($stmt, 'ssss', $name, $email, $contactno, $password);
+$query = mysqli_stmt_execute($stmt);
+mysqli_stmt_close($stmt);
+}
 if($query)
 {
 	echo "<script>alert('You are successfully register');</script>";
@@ -20,26 +33,50 @@ else{
 echo "<script>alert('Not register something went worng');</script>";
 }
 }
+}
 // Code for User login
 if(isset($_POST['login']))
 {
    $email=$_POST['email'];
    $password=md5($_POST['password']);
-$query=mysqli_query($con,"SELECT * FROM users WHERE email='$email' and password='$password'");
-$num=mysqli_fetch_array($query);
-if($num>0)
+$user=fetchUserByEmail($con, $email);
+if($user && isset($user['password']) && $user['password']===$password)
 {
+$state=getUserAccessState($con, $user);
+if(!$state['allowed'])
+{
+$extra="login.php";
+writeAuditLog($con, 'user', $email, 'login', 'failed', $state['message']);
+$uip=$_SERVER['REMOTE_ADDR'];
+$status=0;
+$logStmt = mysqli_prepare($con,"INSERT INTO userlog(userEmail,userip,status) VALUES (?, ?, ?)");
+if ($logStmt) {
+mysqli_stmt_bind_param($logStmt, 'ssi', $email, $uip, $status);
+mysqli_stmt_execute($logStmt);
+mysqli_stmt_close($logStmt);
+}
+$host  = $_SERVER['HTTP_HOST'];
+$uri  = rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
+header("location:http://$host$uri/$extra");
+$_SESSION['errmsg']=$state['message'];
+exit();
+}
 $extra="my-cart.php";
 $_SESSION['login']=$_POST['email'];
-$_SESSION['id']=$num['id'];
-$_SESSION['username']=$num['name'];
+$_SESSION['id']=$user['id'];
+$_SESSION['username']=$user['name'];
 $_SESSION['role']='user';
 unset($_SESSION['alogin'], $_SESSION['admin_name'], $_SESSION['farmer_id'], $_SESSION['farmer_username'], $_SESSION['farmer_name']);
 registerTrackedSession($con, 'user', $_SESSION['username'], 'Customer');
 writeAuditLog($con, 'user', $_POST['email'], 'login', 'success', 'Customer signed in successfully.');
 $uip=$_SERVER['REMOTE_ADDR'];
 $status=1;
-$log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('".$_SESSION['login']."','$uip','$status')");
+$logStmt = mysqli_prepare($con,"INSERT INTO userlog(userEmail,userip,status) VALUES (?, ?, ?)");
+if ($logStmt) {
+mysqli_stmt_bind_param($logStmt, 'ssi', $_SESSION['login'], $uip, $status);
+mysqli_stmt_execute($logStmt);
+mysqli_stmt_close($logStmt);
+}
 $host=$_SERVER['HTTP_HOST'];
 $uri=rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
 header("location:http://$host$uri/$extra");
@@ -52,7 +89,12 @@ $email=$_POST['email'];
 writeAuditLog($con, 'user', $email, 'login', 'failed', 'Failed customer login attempt.');
 $uip=$_SERVER['REMOTE_ADDR'];
 $status=0;
-$log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('$email','$uip','$status')");
+$logStmt = mysqli_prepare($con,"INSERT INTO userlog(userEmail,userip,status) VALUES (?, ?, ?)");
+if ($logStmt) {
+mysqli_stmt_bind_param($logStmt, 'ssi', $email, $uip, $status);
+mysqli_stmt_execute($logStmt);
+mysqli_stmt_close($logStmt);
+}
 $host  = $_SERVER['HTTP_HOST'];
 $uri  = rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
 header("location:http://$host$uri/$extra");

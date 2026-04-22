@@ -45,9 +45,16 @@ else{
 	$value=array_combine($pdd,$quantity);
 
 
-		foreach($value as $qty=> $val34){
-
-mysqli_query($con,"insert into orders(userId,productId,quantity) values('".$_SESSION['id']."','$qty','$val34')");
+	foreach($value as $qty=> $val34){
+		$userId = (int) $_SESSION['id'];
+		$productId = (int) $qty;
+		$productQty = (int) $val34;
+		$stmt = mysqli_prepare($con,"INSERT INTO orders(userId,productId,quantity) VALUES (?, ?, ?)");
+		if ($stmt) {
+			mysqli_stmt_bind_param($stmt, 'iii', $userId, $productId, $productQty);
+			mysqli_stmt_execute($stmt);
+			mysqli_stmt_close($stmt);
+		}
 writeAuditLog($con, 'user', !empty($_SESSION['username']) ? $_SESSION['username'] : $_SESSION['login'], 'order_created', 'success', 'Customer placed order for product ID ' . $qty . ' with quantity ' . $val34 . '.');
 header('location:bill-ship-addresses2.php');
 }

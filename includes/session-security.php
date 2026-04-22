@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/admin/include/audit.php';
+require_once __DIR__ . '/user-account-controls.php';
 
 if (!function_exists('ensureTrackedSessionTable')) {
     function ensureTrackedSessionTable($con)
@@ -209,6 +210,8 @@ if (!function_exists('requireUserSession')) {
     function requireUserSession($con, $redirectTo = 'login.php')
     {
         $userIdentifier = '';
+        $userId = !empty($_SESSION['id']) ? (int) $_SESSION['id'] : 0;
+        $userEmail = !empty($_SESSION['login']) ? (string) $_SESSION['login'] : '';
         if (!empty($_SESSION['username'])) {
             $userIdentifier = (string) $_SESSION['username'];
         } elseif (!empty($_SESSION['login'])) {
@@ -222,6 +225,32 @@ if (!function_exists('requireUserSession')) {
 
         if (!validateTrackedSession($con, 'user', $userIdentifier)) {
             invalidateCurrentSessionWithAudit($con, 'user', $userIdentifier, 'Invalid or expired customer session detected.', $redirectTo);
+        }
+
+        $user = null;
+        if ($userId > 0) {
+            $user = fetchUserById($con, $userId);
+        }
+        if (!$user && $userEmail !== '') {
+            $user = fetchUserByEmail($con, $userEmail);
+        }
+
+        if (!$user) {
+            closeTrackedSession($con);
+            session_unset();
+            $_SESSION['errmsg'] = 'Your account could not be found. Please sign in again.';
+            header('Location: ' . $redirectTo);
+            exit();
+        }
+
+        $state = getUserAccessState($con, $user);
+        if (!$state['allowed']) {
+            closeTrackedSessionsForUser($con, $state['user']);
+            writeAuditLog($con, 'user', $userEmail !== '' ? $userEmail : $userIdentifier, 'session_blocked', 'failed', $state['message']);
+            session_unset();
+            $_SESSION['errmsg'] = $state['message'];
+            header('Location: ' . $redirectTo);
+            exit();
         }
 
         touchTrackedSession($con);

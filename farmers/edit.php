@@ -10,8 +10,7 @@ $pageError = '';
 
 $farmerId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($farmerId <= 0) {
-    header('Location: ' . appUrl('/farmers/index.php?status=error&message=' . urlencode('Invalid farmer selected.')));
-    exit();
+    redirectWithFlash(appUrl('/farmers/index.php'), 'error', 'Invalid farmer selected.', 'farmers');
 }
 
 $farmer = null;

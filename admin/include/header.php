@@ -29,6 +29,88 @@ $portalName = defined('APP_NAME') ? APP_NAME : 'FarmHub';
 $currentRoleLabel = function_exists('getCurrentRoleLabel') ? getCurrentRoleLabel() : 'Admin';
 $currentDisplayName = function_exists('getCurrentDisplayName') ? getCurrentDisplayName() : 'Admin';
 ?>
+<style>
+	.admin-module-tools {
+		float: right;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.admin-module-tools .btn {
+		margin: 0;
+		background: #1f2937;
+		border: 1px solid #111827;
+		color: #ffffff !important;
+		text-shadow: none;
+		font-weight: 600;
+		padding: 6px 12px;
+		border-radius: 4px;
+		box-shadow: none;
+	}
+
+	.admin-module-tools .btn:hover,
+	.admin-module-tools .btn:focus {
+		background: #111827;
+		color: #ffffff !important;
+	}
+
+	.admin-scroll-wrap {
+		overflow-x: auto;
+		overflow-y: hidden;
+		padding-bottom: 8px;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.admin-scroll-wrap table,
+	.admin-scroll-wrap form,
+	.admin-scroll-wrap .form-horizontal {
+		min-width: 960px;
+	}
+
+	.admin-scroll-hint {
+		display: none !important;
+	}
+
+	.admin-fullscreen-backdrop {
+		display: none;
+		position: fixed;
+		inset: 0;
+		background: rgba(15, 23, 42, 0.65);
+		z-index: 9998;
+	}
+
+	.admin-fullscreen-backdrop.is-open {
+		display: block;
+	}
+
+	.module.module-fullscreen {
+		position: fixed;
+		top: 20px;
+		left: 20px;
+		right: 20px;
+		bottom: 20px;
+		margin: 0;
+		z-index: 9999;
+		background: #fff;
+		box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.module.module-fullscreen .module-head {
+		flex: 0 0 auto;
+	}
+
+	.module.module-fullscreen .module-body {
+		flex: 1 1 auto;
+		overflow: auto;
+	}
+
+	body.admin-fullscreen-open {
+		overflow: hidden;
+	}
+</style>
 <div class="navbar navbar-fixed-top">
 		<div class="navbar-inner" style="background-color:#4fb477;">
 			<div class="container">

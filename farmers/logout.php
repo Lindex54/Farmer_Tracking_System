@@ -24,5 +24,4 @@ unset(
 
 session_write_close();
 
-header('Location: login.php?status=success&message=' . urlencode('You have successfully logged out.'));
-exit();
+redirectWithFlash(appUrl('/farmers/login.php'), 'success', 'You have successfully logged out.', 'farmer_login');

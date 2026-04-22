@@ -6,11 +6,18 @@ requireUserSession($con, 'index.php');
 	// code for billing address updation
 	if(isset($_POST['update']))
 	{
-		$baddress=$_POST['billingaddress'];
-		$bstate=$_POST['bilingstate'];
-		$bcity=$_POST['billingcity'];
-		$bpincode=$_POST['billingpincode'];
-		$query=mysqli_query($con,"update users set billingAddress='$baddress',billingState='$bstate',billingCity='$bcity',billingPincode='$bpincode' where id='".$_SESSION['id']."'");
+		$baddress=trim((string)$_POST['billingaddress']);
+		$bstate=trim((string)$_POST['bilingstate']);
+		$bcity=trim((string)$_POST['billingcity']);
+		$bpincode=trim((string)$_POST['billingpincode']);
+		$userId = (int) $_SESSION['id'];
+		$stmt = mysqli_prepare($con,"UPDATE users SET billingAddress = ?, billingState = ?, billingCity = ?, billingPincode = ? WHERE id = ?");
+		$query = false;
+		if ($stmt) {
+			mysqli_stmt_bind_param($stmt, 'ssssi', $baddress, $bstate, $bcity, $bpincode, $userId);
+			$query = mysqli_stmt_execute($stmt);
+			mysqli_stmt_close($stmt);
+		}
 		if($query)
 		{
 echo "<script>alert('Billing Address has been updated');</script>";
@@ -21,11 +28,18 @@ echo "<script>alert('Billing Address has been updated');</script>";
 // code for Shipping address updation
 	if(isset($_POST['shipupdate']))
 	{
-		$saddress=$_POST['shippingaddress'];
-		$sstate=$_POST['shippingstate'];
-		$scity=$_POST['shippingcity'];
-		$spincode=$_POST['shippingpincode'];
-		$query=mysqli_query($con,"update users set shippingAddress='$saddress',shippingState='$sstate',shippingCity='$scity',shippingPincode='$spincode' where id='".$_SESSION['id']."'");
+		$saddress=trim((string)$_POST['shippingaddress']);
+		$sstate=trim((string)$_POST['shippingstate']);
+		$scity=trim((string)$_POST['shippingcity']);
+		$spincode=trim((string)$_POST['shippingpincode']);
+		$userId = (int) $_SESSION['id'];
+		$stmt = mysqli_prepare($con,"UPDATE users SET shippingAddress = ?, shippingState = ?, shippingCity = ?, shippingPincode = ? WHERE id = ?");
+		$query = false;
+		if ($stmt) {
+			mysqli_stmt_bind_param($stmt, 'ssssi', $saddress, $sstate, $scity, $spincode, $userId);
+			$query = mysqli_stmt_execute($stmt);
+			mysqli_stmt_close($stmt);
+		}
 		if($query)
 		{
 echo "<script>alert('Shipping Address has been updated');</script>";

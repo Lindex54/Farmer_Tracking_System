@@ -30,8 +30,7 @@ if ($con) {
     $pageError = 'Database connection is not available.';
 }
 
-$status = isset($_GET['status']) ? trim($_GET['status']) : '';
-$message = isset($_GET['message']) ? trim($_GET['message']) : '';
+$flashMessage = pullFlashMessage('farmers');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,10 +60,10 @@ $message = isset($_GET['message']) ? trim($_GET['message']) : '';
 								<a href="<?php echo appUrl('/farmers/create.php'); ?>" class="btn btn-primary pull-right">Add Farmer</a>
 							</div>
 							<div class="module-body table">
-<?php if ($message !== '') { ?>
-								<div class="alert <?php echo ($status === 'success') ? 'alert-success' : 'alert-error'; ?>">
+<?php if ($flashMessage && !empty($flashMessage['message'])) { ?>
+								<div class="alert <?php echo ($flashMessage['status'] === 'success') ? 'alert-success' : 'alert-error'; ?>">
 									<button type="button" class="close" data-dismiss="alert">x</button>
-									<?php echo htmlentities($message); ?>
+									<?php echo htmlentities($flashMessage['message']); ?>
 								</div>
 <?php } ?>
 <?php if ($pageError !== '') { ?>

@@ -13,30 +13,21 @@ function clean_text($value)
 
 function redirect_to_add_batch($status, $message)
 {
-    $safeStatus = urlencode($status);
-    $safeMessage = urlencode($message);
-    header('Location: ' . appUrl('/farmers/add_batch.php') . '?status=' . $safeStatus . '&message=' . $safeMessage);
-    exit();
+    redirectWithFlash(appUrl('/farmers/add_batch.php'), $status, $message, 'batch_form');
 }
 
 function redirect_to_farmers_index($status, $message)
 {
-    $safeStatus = urlencode($status);
-    $safeMessage = urlencode($message);
-    header('Location: ' . appUrl('/farmers/index.php') . '?status=' . $safeStatus . '&message=' . $safeMessage);
-    exit();
+    redirectWithFlash(appUrl('/farmers/index.php'), $status, $message, 'farmers');
 }
 
 function redirect_to_batches_page($status, $message, $newBatchId = 0)
 {
-    $safeStatus = urlencode($status);
-    $safeMessage = urlencode($message);
-    $url = appUrl('/farmers/batches.php') . '?status=' . $safeStatus . '&message=' . $safeMessage;
+    $url = appUrl('/farmers/batches.php');
     if ((int)$newBatchId > 0) {
-        $url .= '&new_batch_id=' . (int)$newBatchId;
+        $url .= '?new_batch_id=' . (int)$newBatchId;
     }
-    header('Location: ' . $url);
-    exit();
+    redirectWithFlash($url, $status, $message, 'batches');
 }
 
 function is_valid_date($date)
