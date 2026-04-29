@@ -8,19 +8,35 @@ requireAdminOrFarmer(appUrl('/farmers/login.php'));
 $activePage = 'batches';
 $pageError = '';
 $batches = array();
+$currentFarmerId = (function_exists('isFarmer') && isFarmer() && !empty($_SESSION['farmer_id'])) ? (int)$_SESSION['farmer_id'] : 0;
 
 if ($con) {
     mysqli_query($con, "UPDATE batches SET status='complete' WHERE status='drying' AND end_time IS NOT NULL AND end_time <= NOW()");
 
-    $stmt = mysqli_prepare(
-        $con,
-        "SELECT b.batch_id, b.farmer_id, f.name AS farmer_name, b.harvest_date, b.quantity_kg, b.initial_moisture, b.remaining_qty_kg, b.drying_method, b.sorting_quality_score, b.start_time, b.end_time, b.status, b.created_at
-         FROM batches b
-         INNER JOIN farmers f ON f.id = b.farmer_id
-         ORDER BY b.batch_id DESC"
-    );
+    $sql = "SELECT b.batch_id, b.farmer_id, f.name AS farmer_name, b.harvest_date, b.quantity_kg, b.initial_moisture, b.remaining_qty_kg, b.drying_method, b.sorting_quality_score, b.start_time, b.end_time, b.status, b.created_at
+            FROM batches b
+            INNER JOIN farmers f ON f.id = b.farmer_id";
+    $types = '';
+    $params = array();
+
+    if (function_exists('isFarmer') && isFarmer()) {
+        if ($currentFarmerId <= 0) {
+            $pageError = 'Your farmer account could not be identified. Please sign in again.';
+        } else {
+            $sql .= " WHERE b.farmer_id = ?";
+            $types = 'i';
+            $params[] = $currentFarmerId;
+        }
+    }
+
+    $sql .= " ORDER BY b.batch_id DESC";
+    $stmt = ($pageError === '') ? mysqli_prepare($con, $sql) : false;
 
     if ($stmt) {
+        if ($types !== '') {
+            mysqli_stmt_bind_param($stmt, $types, $params[0]);
+        }
+
         if (mysqli_stmt_execute($stmt)) {
             $result = mysqli_stmt_get_result($stmt);
             if ($result) {
@@ -32,7 +48,7 @@ if ($con) {
             $pageError = 'Unable to fetch batch records at the moment.';
         }
         mysqli_stmt_close($stmt);
-    } else {
+    } elseif ($pageError === '') {
         $pageError = 'Unable to prepare batches query.';
     }
 } else {

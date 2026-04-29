@@ -3,6 +3,7 @@ $currentScript = isset($_SERVER['SCRIPT_NAME']) ? (string)$_SERVER['SCRIPT_NAME'
 $activePage = isset($activePage) ? (string)$activePage : '';
 $isAddBatchPage = (strpos($currentScript, '/farmers/add_batch.php') !== false || $activePage === 'add-batches');
 $isBatchesPage = (strpos($currentScript, '/farmers/batches.php') !== false || $activePage === 'batches');
+$isPostHarvestPage = (strpos($currentScript, '/farmers/post_harvest.php') !== false || $activePage === 'post-harvest');
 ?>
 <div class="span3">
 	<div class="sidebar">
@@ -17,6 +18,12 @@ $isBatchesPage = (strpos($currentScript, '/farmers/batches.php') !== false || $a
 				<a href="<?php echo appUrl('/farmers/batches.php'); ?>">
 					<i class="menu-icon icon-table"></i>
 					Batches
+				</a>
+			</li>
+			<li class="<?php echo $isPostHarvestPage ? 'active' : ''; ?>">
+				<a href="<?php echo appUrl('/farmers/post_harvest.php'); ?>">
+					<i class="menu-icon icon-tasks"></i>
+					Post-Harvest
 				</a>
 			</li>
 		</ul>

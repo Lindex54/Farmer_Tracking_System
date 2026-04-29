@@ -8,10 +8,25 @@ requireAdminOrFarmer(appUrl('/farmers/login.php'));
 $activePage = 'add-batches';
 $pageError = '';
 $farmers = array();
+$currentFarmerId = (function_exists('isFarmer') && isFarmer() && !empty($_SESSION['farmer_id'])) ? (int)$_SESSION['farmer_id'] : 0;
 
 if ($con) {
-    $stmt = mysqli_prepare($con, "SELECT id, name FROM farmers ORDER BY name ASC");
+    if (function_exists('isFarmer') && isFarmer()) {
+        if ($currentFarmerId <= 0) {
+            $stmt = false;
+            $pageError = 'Your farmer account could not be identified. Please sign in again.';
+        } else {
+            $stmt = mysqli_prepare($con, "SELECT id, name FROM farmers WHERE id = ? LIMIT 1");
+        }
+    } else {
+        $stmt = mysqli_prepare($con, "SELECT id, name FROM farmers ORDER BY name ASC");
+    }
+
     if ($stmt) {
+        if (function_exists('isFarmer') && isFarmer()) {
+            mysqli_stmt_bind_param($stmt, 'i', $currentFarmerId);
+        }
+
         if (mysqli_stmt_execute($stmt)) {
             $result = mysqli_stmt_get_result($stmt);
             if ($result) {
@@ -23,7 +38,7 @@ if ($con) {
             $pageError = 'Unable to fetch farmers at the moment.';
         }
         mysqli_stmt_close($stmt);
-    } else {
+    } elseif ($pageError === '') {
         $pageError = 'Unable to prepare farmers query.';
     }
 } else {
@@ -86,6 +101,17 @@ $batchId = isset($_GET['batch_id']) ? (int)$_GET['batch_id'] : 0;
 <?php } ?>
 									<form id="batchForm" class="form-horizontal row-fluid" action="<?php echo appUrl('/admin/add_batch.php'); ?>" method="post" novalidate>
 										<input type="hidden" name="batch_id" value="<?php echo $batchId > 0 ? $batchId : 0; ?>">
+<?php if (function_exists('isFarmer') && isFarmer()) { ?>
+										<input type="hidden" name="farmer_id" value="<?php echo (int)$currentFarmerId; ?>">
+<?php if (!empty($farmers)) { ?>
+										<div class="control-group">
+											<label class="control-label">Farmer</label>
+											<div class="controls">
+												<input type="text" class="span10" value="<?php echo htmlentities($farmers[0]['name']); ?>" disabled>
+											</div>
+										</div>
+<?php } ?>
+<?php } else { ?>
 										<div class="control-group">
 											<label class="control-label" for="farmer_id">Farmer</label>
 											<div class="controls">
@@ -97,6 +123,7 @@ $batchId = isset($_GET['batch_id']) ? (int)$_GET['batch_id'] : 0;
 												</select>
 											</div>
 										</div>
+<?php } ?>
 										<div class="control-group">
 											<label class="control-label" for="harvest_date">Harvest Date</label>
 											<div class="controls">

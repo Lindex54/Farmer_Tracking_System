@@ -161,6 +161,47 @@ CREATE TABLE `batches` (
   KEY `idx_batches_end_time` (`end_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `post_harvest_stages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `batch_id` int(11) NOT NULL,
+  `stage_type` varchar(50) NOT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
+  `method` varchar(100) NOT NULL,
+  `result_score` decimal(5,2) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_post_harvest_batch_id` (`batch_id`),
+  KEY `idx_post_harvest_stage_type` (`stage_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `storage_records` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `batch_id` int(11) NOT NULL,
+  `storage_type` varchar(80) NOT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
+  `moisture_level` decimal(5,2) DEFAULT NULL,
+  `temperature` decimal(5,2) DEFAULT NULL,
+  `pest_infestation_level` varchar(30) NOT NULL DEFAULT 'None',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_storage_batch_id` (`batch_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `quality_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `batch_id` int(11) NOT NULL,
+  `test_date` date NOT NULL,
+  `mold_presence` tinyint(1) NOT NULL DEFAULT 0,
+  `aflatoxin_reading` decimal(8,2) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_quality_batch_id` (`batch_id`),
+  KEY `idx_quality_test_date` (`test_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 ALTER TABLE `subcategory`
   ADD CONSTRAINT `fk_subcategory_category`
   FOREIGN KEY (`categoryid`) REFERENCES `category` (`id`)
@@ -192,6 +233,21 @@ ALTER TABLE `productreviews`
 ALTER TABLE `batches`
   ADD CONSTRAINT `fk_batches_farmer`
   FOREIGN KEY (`farmer_id`) REFERENCES `farmers` (`id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `post_harvest_stages`
+  ADD CONSTRAINT `fk_post_harvest_batch`
+  FOREIGN KEY (`batch_id`) REFERENCES `batches` (`batch_id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `storage_records`
+  ADD CONSTRAINT `fk_storage_batch`
+  FOREIGN KEY (`batch_id`) REFERENCES `batches` (`batch_id`)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `quality_logs`
+  ADD CONSTRAINT `fk_quality_batch`
+  FOREIGN KEY (`batch_id`) REFERENCES `batches` (`batch_id`)
   ON DELETE CASCADE ON UPDATE CASCADE;
 
 DELIMITER $$
@@ -236,4 +292,18 @@ INSERT INTO `farmers` (`id`, `username`, `name`, `location`, `phone`, `farm_size
 (1, 'farmer001', 'Demo Farmer', 'Kampala', '0700000000', 2.50, 'MaizeHub Demo Group', NULL, NOW());
 
 INSERT INTO `batches` (`batch_id`, `farmer_id`, `harvest_date`, `quantity_kg`, `initial_moisture`, `remaining_qty_kg`, `drying_method`, `sorting_quality_score`, `start_time`, `end_time`, `status`, `created_at`) VALUES
-(1, 1, CURDATE(), 1200.00, 18.50, 1200.00, 'Sun Drying', 85.00, NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), 'drying', NOW());
+(1, 1, CURDATE(), 1200.00, 18.50, 1200.00, 'Sun Drying', 85.00, NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), 'drying', NOW()),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 850.00, 20.00, 850.00, 'Raised Bed Drying', 78.00, NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 'drying', NOW());
+
+INSERT INTO `post_harvest_stages` (`batch_id`, `stage_type`, `start_date`, `end_date`, `method`, `result_score`) VALUES
+(1, 'Drying', '2026-03-02', '2026-03-06', 'Sun Drying', 80.00),
+(1, 'Cleaning', '2026-03-07', '2026-03-07', 'Manual', 85.00),
+(2, 'Drying', '2026-03-06', '2026-03-10', 'Raised Bed Drying', 75.00);
+
+INSERT INTO `storage_records` (`batch_id`, `storage_type`, `start_date`, `end_date`, `moisture_level`, `temperature`, `pest_infestation_level`) VALUES
+(1, 'Silo', '2026-03-08', NULL, 13.50, 25.00, 'Low'),
+(2, 'PICS Bag', '2026-03-11', NULL, 14.00, 26.00, 'None');
+
+INSERT INTO `quality_logs` (`batch_id`, `test_date`, `mold_presence`, `aflatoxin_reading`, `notes`) VALUES
+(1, '2026-03-09', 0, 5.20, 'Good quality'),
+(2, '2026-03-12', 1, 15.00, 'Needs improvement');

@@ -3,6 +3,7 @@ session_start();
 error_reporting(0);
 include('include/config.php');
 include('include/admin-auth.php');
+requireAdminOrFarmer(appUrl('/farmers/login.php'));
 
 function clean_text($value)
 {
@@ -64,6 +65,14 @@ $initialMoistureInput = clean_text(isset($_POST['initial_moisture']) ? $_POST['i
 $remainingInput = clean_text(isset($_POST['remaining_qty_kg']) ? $_POST['remaining_qty_kg'] : '');
 $dryingMethod = clean_text(isset($_POST['drying_method']) ? $_POST['drying_method'] : '');
 $sortingScoreInput = clean_text(isset($_POST['sorting_quality_score']) ? $_POST['sorting_quality_score'] : '');
+
+if (function_exists('isFarmer') && isFarmer()) {
+    $sessionFarmerId = !empty($_SESSION['farmer_id']) ? (int)$_SESSION['farmer_id'] : 0;
+    if ($sessionFarmerId <= 0) {
+        redirect_to_add_batch('error', 'Your farmer account could not be identified. Please sign in again.');
+    }
+    $farmerId = $sessionFarmerId;
+}
 
 if ($farmerId <= 0 || $harvestDate === '' || $quantityInput === '') {
     redirect_to_add_batch('error', 'Farmer, harvest date, and quantity are required.');
@@ -152,11 +161,19 @@ $startTime = date('Y-m-d H:i:s');
 $endTime = date('Y-m-d H:i:s', time() + $durationSeconds);
 
 if ($batchId > 0) {
-    $batchCheckStmt = mysqli_prepare($con, "SELECT batch_id FROM batches WHERE batch_id = ? LIMIT 1");
+    if (function_exists('isFarmer') && isFarmer()) {
+        $batchCheckStmt = mysqli_prepare($con, "SELECT batch_id FROM batches WHERE batch_id = ? AND farmer_id = ? LIMIT 1");
+    } else {
+        $batchCheckStmt = mysqli_prepare($con, "SELECT batch_id FROM batches WHERE batch_id = ? LIMIT 1");
+    }
     if (!$batchCheckStmt) {
         redirect_to_add_batch('error', 'Unable to validate batch.');
     }
-    mysqli_stmt_bind_param($batchCheckStmt, 'i', $batchId);
+    if (function_exists('isFarmer') && isFarmer()) {
+        mysqli_stmt_bind_param($batchCheckStmt, 'ii', $batchId, $farmerId);
+    } else {
+        mysqli_stmt_bind_param($batchCheckStmt, 'i', $batchId);
+    }
     mysqli_stmt_execute($batchCheckStmt);
     $batchResult = mysqli_stmt_get_result($batchCheckStmt);
     $batchExists = $batchResult ? mysqli_fetch_assoc($batchResult) : null;
