@@ -118,9 +118,9 @@ $currentDisplayName = function_exists('getCurrentDisplayName') ? getCurrentDispl
 					<i class="icon-reorder shaded"></i>
 				</a>
 
-			  	<a class="brand" href="<?php echo (function_exists('isFarmer') && isFarmer()) ? appUrl('/farmers/batches.php') : appUrl('/admin/dashboard.php'); ?>" style="text-shadow:none;">
-			  		<?php echo htmlentities($portalName); ?> | <?php echo htmlentities($currentRoleLabel); ?> Portal
-			  	</a>
+				<a class="brand" href="<?php echo (function_exists('isFarmer') && isFarmer()) ? appUrl('/farmers/overview.php') : appUrl('/admin/dashboard.php'); ?>" style="text-shadow:none;">
+					<?php echo htmlentities($portalName); ?> | <?php echo htmlentities($currentRoleLabel); ?> Portal
+				</a>
 
 				<div class="nav-collapse collapse navbar-inverse-collapse">
 					<ul class="nav pull-right">

@@ -200,9 +200,19 @@ $batchId = isset($_GET['batch_id']) ? (int)$_GET['batch_id'] : 0;
 		};
 
 		form.addEventListener('submit', function (event) {
+			var quantityField = document.getElementById('quantity_kg');
+			var remainingField = document.getElementById('remaining_qty_kg');
 			var dryingMethodField = document.getElementById('drying_method');
+			var quantity = quantityField ? parseFloat(quantityField.value) : 0;
+			var remaining = remainingField && remainingField.value !== '' ? parseFloat(remainingField.value) : quantity;
 			var selectedMethod = dryingMethodField ? dryingMethodField.value : '';
 			var predictedTime = durationMap[selectedMethod] || '';
+
+			if (!isNaN(quantity) && !isNaN(remaining) && remaining > quantity) {
+				alert('Remaining quantity cannot be greater than the initial quantity.');
+				event.preventDefault();
+				return;
+			}
 
 			if (!predictedTime) {
 				alert('Please select a drying method.');

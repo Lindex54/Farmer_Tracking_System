@@ -5,7 +5,7 @@ include('../admin/include/config.php');
 include('../admin/include/admin-auth.php');
 
 if (isset($_SESSION['role']) && strtolower((string)$_SESSION['role']) === 'farmer') {
-    header('Location: ' . appUrl('/farmers/batches.php'));
+    header('Location: ' . appUrl('/farmers/overview.php'));
     exit();
 }
 

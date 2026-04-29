@@ -101,6 +101,9 @@ if ($remainingInput !== '') {
     if ($remainingQtyKg < 0) {
         redirect_to_add_batch('error', 'Remaining quantity cannot be negative.');
     }
+    if ($remainingQtyKg > $quantityKg) {
+        redirect_to_add_batch('error', 'Remaining quantity cannot be greater than the initial quantity.');
+    }
 }
 
 $initialMoistureParam = '';

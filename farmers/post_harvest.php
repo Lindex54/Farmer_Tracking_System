@@ -434,6 +434,20 @@ $stageMethods = postHarvestStageMethods();
 		});
 
 		(function() {
+			var forms = document.querySelectorAll('form.form-vertical');
+			for (var i = 0; i < forms.length; i++) {
+				forms[i].addEventListener('submit', function(event) {
+					var startField = this.querySelector('input[name="start_date"]');
+					var endField = this.querySelector('input[name="end_date"]');
+					if (startField && endField && startField.value && endField.value && endField.value < startField.value) {
+						alert('End date cannot be before the start date.');
+						event.preventDefault();
+					}
+				});
+			}
+		})();
+
+		(function() {
 			var methodsByStage = <?php echo json_encode($stageMethods); ?>;
 			var stageField = document.getElementById('stage_type');
 			var methodField = document.getElementById('stage_method');

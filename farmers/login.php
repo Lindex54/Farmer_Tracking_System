@@ -6,7 +6,7 @@ include('../admin/include/admin-auth.php');
 require_once __DIR__ . '/../admin/include/audit.php';
 
 if (isset($_SESSION['role']) && strtolower((string)$_SESSION['role']) === 'farmer') {
-    header('Location: ' . appUrl('/farmers/batches.php'));
+    header('Location: ' . appUrl('/farmers/overview.php'));
     exit();
 }
 
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             registerTrackedSession($con, 'farmer', $_SESSION['farmer_name'], 'Farmer');
                             writeAuditLog($con, 'farmer', $_SESSION['farmer_name'], 'login', 'success', 'Farmer signed in successfully.');
 
-                            header('Location: ' . appUrl('/farmers/batches.php'));
+                            header('Location: ' . appUrl('/farmers/overview.php'));
                             mysqli_stmt_close($stmt);
                             exit();
                         } else {

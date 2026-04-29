@@ -1,6 +1,7 @@
 <?php
 $currentScript = isset($_SERVER['SCRIPT_NAME']) ? (string)$_SERVER['SCRIPT_NAME'] : '';
 $activePage = isset($activePage) ? (string)$activePage : '';
+$isOverviewPage = (strpos($currentScript, '/farmers/overview.php') !== false || $activePage === 'overview');
 $isAddBatchPage = (strpos($currentScript, '/farmers/add_batch.php') !== false || $activePage === 'add-batches');
 $isBatchesPage = (strpos($currentScript, '/farmers/batches.php') !== false || $activePage === 'batches');
 $isPostHarvestPage = (strpos($currentScript, '/farmers/post_harvest.php') !== false || $activePage === 'post-harvest');
@@ -8,6 +9,12 @@ $isPostHarvestPage = (strpos($currentScript, '/farmers/post_harvest.php') !== fa
 <div class="span3">
 	<div class="sidebar">
 		<ul class="widget widget-menu unstyled">
+			<li class="<?php echo $isOverviewPage ? 'active' : ''; ?>">
+				<a href="<?php echo appUrl('/farmers/overview.php'); ?>">
+					<i class="menu-icon icon-dashboard"></i>
+					Overview
+				</a>
+			</li>
 			<li class="<?php echo $isAddBatchPage ? 'active' : ''; ?>">
 				<a href="<?php echo appUrl('/farmers/add_batch.php'); ?>">
 					<i class="menu-icon icon-plus"></i>
