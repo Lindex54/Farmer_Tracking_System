@@ -74,7 +74,6 @@ if (!function_exists('getDashboardSnapshot')) {
                 'revenue' => (float) dashboardScalar($con, "SELECT COALESCE(SUM((orders.quantity * products.productPrice) + products.shippingCharge), 0) FROM orders INNER JOIN products ON products.id = orders.productId")
             ),
             'recentOrders' => array(),
-            'recentAudit' => array(),
             'ordersTrend' => array(),
             'loginsTrend' => array(),
             'roleLogins' => array(),
@@ -153,14 +152,6 @@ if (!function_exists('getDashboardSnapshot')) {
              INNER JOIN products ON products.id = orders.productId
              ORDER BY orders.orderDate DESC
              LIMIT 8"
-        );
-
-        $snapshot['recentAudit'] = dashboardRows(
-            $con,
-            "SELECT actor_type, actor_identifier, event_type, status, ip_address, details, created_at
-             FROM audit_logs
-             ORDER BY created_at DESC
-             LIMIT 10"
         );
 
         return $snapshot;

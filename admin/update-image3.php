@@ -28,7 +28,7 @@ $_SESSION['msg']="Product Image Updated Successfully !!";
 	<title>Admin| Insert Product</title>
 	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-	<link type="text/css" href="css/theme.css" rel="stylesheet">
+	<link type="text/css" href="css/theme.css?v=side-rail-2" rel="stylesheet">
 	<link type="text/css" href="images/icons/css/font-awesome.css" rel="stylesheet">
 	<link type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600' rel='stylesheet'>
 <script src="http://js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>

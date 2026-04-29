@@ -19,12 +19,7 @@
 					<!-- ============================================================= LOGO ============================================================= -->
 <div class="logo">
 	<a href="index.php">
-		
-		<h2 style="margin-top:0; padding-top:0;"><div class="item">
-					<a href="index.php" class="image">
-						<img width="150" height="120" data-echo="brandsimage/logo.png" src="assets/images/blank.gif" alt="">
-					</a>	</h2>
-
+		<img width="150" height="120" data-echo="brandsimage/logo.png" src="assets/images/blank.gif" alt="<?php echo APP_NAME; ?>">
 	</a>
 </div>		
 </div>
@@ -163,7 +158,7 @@ if(!empty($_SESSION['cart'])){
 				
 				<div class="clearfix"></div>
 					
-				<a href="index.php" class="btn btn-upper btn-primary btn-block m-t-20">Continue Shooping</a>	
+				<a href="index.php" class="btn btn-upper btn-primary btn-block m-t-20">Continue Shopping</a>
 			</div><!-- /.cart-total-->
 					
 				

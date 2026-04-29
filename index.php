@@ -118,26 +118,14 @@ if(isset($_GET['action']) && $_GET['action']=="add"){
 			
 			<div class="col-xs-12 col-sm-12 col-md-9 homebanner-holder">
 				<div class="home-hero-intro wow fadeInUp">
-					<span class="home-hero-kicker"><i class="fa fa-leaf"></i> <?php echo APP_NAME; ?> Marketplace</span>
-					<h1 class="home-hero-title">Buy maize products with confidence, while farmers keep using their dedicated portal.</h1>
-					<p class="home-hero-copy">The homepage now stays focused on browsing and discovery. User authentication opens only when you click the login link or action button, while all your current homepage information, navigation, header, and footer stay in place.</p>
-					<div class="home-hero-actions">
-						<a href="login.php" class="home-action-btn primary" data-auth-modal-open>User Login</a>
-						<a href="farmers/login.php" class="home-action-btn secondary">Farmer Login</a>
+					<div>
+						<span class="home-hero-kicker"><i class="fa fa-leaf"></i> <?php echo APP_NAME; ?> Marketplace</span>
+						<h1 class="home-hero-title">Fresh maize, grains, and farm essentials in one place.</h1>
+						<p class="home-hero-copy">Shop trusted produce and agricultural supplies, then track every order from your account.</p>
 					</div>
-					<div class="home-hero-metrics">
-						<div class="home-hero-metric">
-							<strong>Shop</strong>
-							<span>Browse maize, seeds, flour, and related products from one clean homepage.</span>
-						</div>
-						<div class="home-hero-metric">
-							<strong>Track</strong>
-							<span>Access account tools, order status, and checkout only when you need them.</span>
-						</div>
-						<div class="home-hero-metric">
-							<strong>Separate</strong>
-							<span>Farmer authentication remains untouched and continues in its own portal.</span>
-						</div>
+					<div class="home-hero-actions">
+						<a href="#product-tabs-slider" class="home-action-btn primary">Shop Products</a>
+						<a href="login.php" class="home-action-btn secondary" data-auth-modal-open>User Login</a>
 					</div>
 				</div>
 				<!-- ========================================== SECTION – HERO ========================================= -->

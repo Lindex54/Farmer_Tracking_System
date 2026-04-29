@@ -64,6 +64,7 @@ header('location:my-wishlist.php');
 
 		<!-- Demo Purpose Only. Should be removed in production -->
 		<link rel="stylesheet" href="assets/css/config.css">
+		<link rel="stylesheet" href="assets/css/catalog-ui.css">
 
 		<link href="assets/css/green.css" rel="alternate stylesheet" title="Green color">
 		<link href="assets/css/blue.css" rel="alternate stylesheet" title="Blue color">
@@ -89,7 +90,7 @@ header('location:my-wishlist.php');
 		<![endif]-->
 
 	</head>
-    <body class="cnt-home">
+    <body class="cnt-home catalog-refresh">
 	
 <header class="header-style-1">
 
@@ -109,7 +110,7 @@ header('location:my-wishlist.php');
 		<div class='row outer-bottom-sm'>
 			<div class='col-md-3 sidebar'>
 	            <!-- ================================== TOP NAVIGATION ================================== -->
-<!-- ================================== TOP NAVIGATION : END ================================== -->	            <div class="sidebar-module-container">
+<!-- ================================== TOP NAVIGATION : END ================================== -->	            <div class="sidebar-module-container catalog-filter-panel">
 	            	<h3 class="section-title">shop by</h3>
 	            	<div class="sidebar-filter">
 		            	<!-- ============================================== SIDEBAR CATEGORY ============================================== -->
@@ -146,30 +147,15 @@ while($row=mysqli_fetch_array($sql))
 			<div class='col-md-9'>
 					<!-- ========================================== SECTION – HERO ========================================= -->
 
-	<div id="category" class="category-carousel hidden-xs">
-		<div class="item">	
-			<div class="image">
-				<img src="assets/images/banners/cat-banner-2.jpg" alt="" class="img-responsive">
-			</div>
-			<div class="container-fluid">
-				<div class="caption vertical-top text-left">
-					<div class="big-text">
-						<br />
-					</div>
-
-					       <?php $sql=mysqli_query($con,"select subcategory  from subcategory where id='$cid'");
+	<div id="category" class="catalog-hero">
+		<?php $sql=mysqli_query($con,"select subcategory  from subcategory where id='$cid'");
 while($row=mysqli_fetch_array($sql))
 {
     ?>
-
-					<div class="excerpt hidden-sm hidden-md">
-						<?php echo htmlentities($row['subcategory']);?>
-					</div>
+		<span class="catalog-kicker"><i class="fa fa-leaf"></i> Sub Category</span>
+		<h1><?php echo htmlentities($row['subcategory']);?></h1>
+		<p>Explore selected products in this sub category and add them to your cart.</p>
 			<?php } ?>
-			
-				</div><!-- /.caption -->
-			</div><!-- /.container-fluid -->
-		</div>
 </div>
 
 				<div class="search-result-container">
@@ -183,13 +169,18 @@ $num=mysqli_num_rows($ret);
 if($num>0)
 {
 while ($row=mysqli_fetch_array($ret)) 
-{?>							
+{
+$productImage = trim((string)$row['productImage1']);
+$productImagePath = ($productImage !== '' && file_exists("admin/productimages/".$row['id']."/".$productImage))
+	? "admin/productimages/".htmlentities($row['id'])."/".htmlentities($productImage)
+	: "admin/productimages/21/no-image-available.png";
+?>
 		<div class="col-sm-6 col-md-4 wow fadeInUp">
 			<div class="products">				
 	<div class="product">		
 		<div class="product-image">
 			<div class="image">
-				<a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><img  src="assets/images/blank.gif" data-echo="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" alt="" width="200" height="200"></a>
+				<a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><img src="<?php echo $productImagePath;?>" data-echo="<?php echo $productImagePath;?>" alt="<?php echo htmlentities($row['productName']);?>" width="200" height="200"></a>
 			</div><!-- /.image -->			                      		   
 		</div><!-- /.product-image -->
 			
@@ -214,13 +205,13 @@ while ($row=mysqli_fetch_array($ret))
 							<button class="btn btn-primary icon" data-toggle="dropdown" type="button">
 								<i class="fa fa-shopping-cart"></i>													
 							</button>
-							<a href="category.php?page=product&action=add&id=<?php echo $row['id']; ?>">
+							<a href="sub-category.php?page=product&action=add&id=<?php echo $row['id']; ?>&scid=<?php echo $cid; ?>">
 							<button class="btn btn-primary" type="button">Add to cart</button></a>
 													
 						</li>
 	                   
 		                <li class="lnk wishlist">
-							<a class="add-to-cart" href="category.php?pid=<?php echo htmlentities($row['id'])?>&&action=wishlist" title="Wishlist">
+							<a class="add-to-cart" href="sub-category.php?pid=<?php echo htmlentities($row['id'])?>&&action=wishlist&scid=<?php echo $cid; ?>" title="Wishlist">
 								 <i class="icon fa fa-heart"></i>
 							</a>
 						</li>
@@ -234,7 +225,12 @@ while ($row=mysqli_fetch_array($ret))
 		</div>
 	  <?php } } else {?>
 	
-		<div class="col-sm-6 col-md-4 wow fadeInUp"> <h3>No Product Found</h3>
+		<div class="col-xs-12 wow fadeInUp">
+			<div class="catalog-empty-state">
+				<i class="fa fa-shopping-basket"></i>
+				<h3>No products found</h3>
+				<p>There are no products in this sub category yet. Try another category from the sidebar.</p>
+			</div>
 		</div>
 		
 <?php } ?>	

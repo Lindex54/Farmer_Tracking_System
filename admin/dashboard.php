@@ -16,12 +16,12 @@ $snapshot = getDashboardSnapshot($con);
 	<title><?php echo APP_NAME; ?> | Admin Dashboard</title>
 	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-	<link type="text/css" href="css/theme.css" rel="stylesheet">
-	<link type="text/css" href="css/dashboard.css" rel="stylesheet">
+	<link type="text/css" href="css/theme.css?v=side-rail-2" rel="stylesheet">
+	<link type="text/css" href="css/dashboard.css?v=hero-color-1" rel="stylesheet">
 	<link type="text/css" href="images/icons/css/font-awesome.css" rel="stylesheet">
 	<link type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600' rel='stylesheet'>
 </head>
-<body>
+<body class="admin-dashboard-page">
 <?php include('include/header.php'); ?>
 	<div class="wrapper">
 		<div class="container">
@@ -59,7 +59,10 @@ $snapshot = getDashboardSnapshot($con);
 								</div>
 								<div class="dashboard-card dashboard-kpi">
 									<div class="dashboard-kpi-label">Revenue</div>
-									<div class="dashboard-kpi-value" data-kpi-money="revenue"><?php echo number_format((float) $snapshot['kpis']['revenue']); ?></div>
+									<div class="dashboard-kpi-value dashboard-money-value" data-kpi-money="revenue">
+										<span class="dashboard-money-prefix">UGX</span>
+										<span class="dashboard-money-amount"><?php echo number_format((float) $snapshot['kpis']['revenue']); ?></span>
+									</div>
 									<div class="dashboard-kpi-sub">Estimated gross order value</div>
 								</div>
 								<div class="dashboard-card dashboard-kpi">
@@ -149,15 +152,6 @@ $snapshot = getDashboardSnapshot($con);
 								</div>
 							</div>
 
-							<div class="dashboard-card dashboard-wide-card">
-								<div class="dashboard-panel">
-									<div class="dashboard-panel-header">
-										<h3>Recent Audit Trail</h3>
-										<a href="<?php echo htmlentities(appUrl('/admin/audit-logs.php')); ?>">Open full log</a>
-									</div>
-									<div id="audit-feed" class="dashboard-feed"></div>
-								</div>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -265,28 +259,6 @@ $snapshot = getDashboardSnapshot($con);
 			});
 		}
 
-		function renderAudit(rows) {
-			var container = $('#audit-feed');
-			container.empty();
-			if (!rows || !rows.length) {
-				container.html('<div class="dashboard-empty">No audit events recorded yet.</div>');
-				return;
-			}
-
-			$.each(rows, function (_, row) {
-				var actor = (row.actor_type || 'actor') + ': ' + (row.actor_identifier || 'unknown');
-				var details = row.details ? $('<div>').text(row.details).html() : 'No additional details';
-				container.append(
-					'<div class="dashboard-feed-item">' +
-						'<strong>' + $('<div>').text(actor).html() + '</strong>' +
-						'<div>' + $('<div>').text(row.event_type).html() + ' <span class="status-pill ' + statusClass(String(row.status).toLowerCase()) + '">' + $('<div>').text(row.status).html() + '</span></div>' +
-						'<div style="margin-top:8px;color:#627264;">' + details + '</div>' +
-						'<div class="dashboard-feed-meta"><span>' + $('<div>').text(row.ip_address || '').html() + '</span><span>' + $('<div>').text(row.created_at).html() + '</span></div>' +
-					'</div>'
-				);
-			});
-		}
-
 		function updateSnapshot(snapshot) {
 			$('[data-kpi]').each(function () {
 				var key = $(this).data('kpi');
@@ -295,7 +267,11 @@ $snapshot = getDashboardSnapshot($con);
 			$('[data-kpi-money]').each(function () {
 				var key = $(this).data('kpi-money');
 				var value = snapshot.kpis && snapshot.kpis[key] ? snapshot.kpis[key] : 0;
-				$(this).text(formatMoney(value));
+				var numeric = parseFloat(value || 0);
+				$(this).html(
+					'<span class="dashboard-money-prefix">UGX</span>' +
+					'<span class="dashboard-money-amount">' + numeric.toLocaleString() + '</span>'
+				);
 			});
 
 			$('#dashboard-last-updated').text(new Date().toLocaleString());
@@ -304,7 +280,6 @@ $snapshot = getDashboardSnapshot($con);
 			renderOrders(snapshot.recentOrders || []);
 			renderRoleLogins(snapshot.roleLogins || []);
 			renderCategoryBreakdown(snapshot.categoryBreakdown || []);
-			renderAudit(snapshot.recentAudit || []);
 		}
 
 		function refreshDashboard() {

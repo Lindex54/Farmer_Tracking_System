@@ -17,7 +17,7 @@ $logs = mysqli_query($con, "SELECT * FROM audit_logs ORDER BY created_at DESC, i
 	<title><?php echo APP_NAME; ?> | Audit Logs</title>
 	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-	<link type="text/css" href="css/theme.css" rel="stylesheet">
+	<link type="text/css" href="css/theme.css?v=side-rail-2" rel="stylesheet">
 	<link type="text/css" href="images/icons/css/font-awesome.css" rel="stylesheet">
 	<link type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600' rel='stylesheet'>
 </head>
@@ -42,7 +42,6 @@ $logs = mysqli_query($con, "SELECT * FROM audit_logs ORDER BY created_at DESC, i
 											<th>Actor</th>
 											<th>Event</th>
 											<th>Status</th>
-											<th>IP</th>
 											<th>Details</th>
 											<th>Created</th>
 										</tr>
@@ -59,7 +58,6 @@ if ($logs) {
 											<td><?php echo htmlentities($row['actor_identifier']); ?></td>
 											<td><?php echo htmlentities($row['event_type']); ?></td>
 											<td><?php echo htmlentities($row['status']); ?></td>
-											<td><?php echo htmlentities($row['ip_address']); ?></td>
 											<td><?php echo htmlentities($row['details']); ?></td>
 											<td><?php echo htmlentities($row['created_at']); ?></td>
 										</tr>
@@ -85,7 +83,7 @@ if ($logs) {
 	<script>
 		$(document).ready(function() {
 			$('.datatable-1').dataTable({
-				"order": [[7, "desc"]]
+				"order": [[6, "desc"]]
 			});
 		});
 	</script>

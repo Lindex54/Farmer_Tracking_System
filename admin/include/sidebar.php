@@ -24,22 +24,21 @@ if (!function_exists('appUrl')) {
 }
 
 $currentScript = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
+$currentFile = basename($currentScript);
 $activePage = isset($activePage) ? $activePage : '';
-$isDashboardPage = (strpos($currentScript, 'dashboard.php') !== false || $activePage === 'dashboard');
+$isDashboardPage = ($currentFile === 'dashboard.php' || $activePage === 'dashboard');
 
 $isOrdersPage = (
-    strpos($currentScript, 'todays-orders.php') !== false ||
-    strpos($currentScript, 'pending-orders.php') !== false ||
-    strpos($currentScript, 'delivered-orders.php') !== false
+    in_array($currentFile, array('todays-orders.php', 'pending-orders.php', 'delivered-orders.php', 'updateorder.php'), true)
 );
 
-$isUsersPage = strpos($currentScript, 'manage-users.php') !== false;
-$isCategoryPage = strpos($currentScript, 'category.php') !== false;
-$isSubCategoryPage = strpos($currentScript, 'subcategory.php') !== false;
-$isInsertProductPage = strpos($currentScript, 'insert-product.php') !== false;
-$isManageProductsPage = strpos($currentScript, 'manage-products.php') !== false;
+$isUsersPage = $currentFile === 'manage-users.php';
+$isCategoryPage = in_array($currentFile, array('category.php', 'edit-category.php'), true);
+$isSubCategoryPage = in_array($currentFile, array('subcategory.php', 'edit-subcategory.php'), true);
+$isInsertProductPage = $currentFile === 'insert-product.php';
+$isManageProductsPage = in_array($currentFile, array('manage-products.php', 'edit-products.php', 'update-image1.php', 'update-image2.php', 'update-image3.php'), true);
 $isFarmersPage = (strpos($currentScript, '/farmers/') !== false || $activePage === 'farmers');
-$isUserLogsPage = (strpos($currentScript, 'user-logs.php') !== false || strpos($currentScript, 'audit-logs.php') !== false || $activePage === 'audit-logs');
+$isUserLogsPage = (in_array($currentFile, array('user-logs.php', 'audit-logs.php'), true) || $activePage === 'audit-logs');
 ?>
 <div class="span3">
 	<div class="sidebar">

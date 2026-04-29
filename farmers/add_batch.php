@@ -41,7 +41,7 @@ $batchId = isset($_GET['batch_id']) ? (int)$_GET['batch_id'] : 0;
 	<title>Admin | Add Batch</title>
 	<link type="text/css" href="../admin/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="../admin/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-	<link type="text/css" href="../admin/css/theme.css" rel="stylesheet">
+	<link type="text/css" href="../admin/css/theme.css?v=nav-shell-1" rel="stylesheet">
 	<link type="text/css" href="../admin/images/icons/css/font-awesome.css" rel="stylesheet">
 	<link type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
 	<link type="text/css" href="include/farmers-ui.css" rel="stylesheet">
