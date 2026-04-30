@@ -10,7 +10,7 @@ $pageError = '';
 
 $farmerId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($farmerId <= 0) {
-    redirectWithFlash(appUrl('/farmers/index.php'), 'error', 'Invalid farmer selected.', 'farmers');
+    redirectWithFlash(appUrl('/farmers/manage.php'), 'error', 'Invalid farmer selected.', 'farmers');
 }
 
 $farmer = null;
@@ -69,7 +69,7 @@ if ($con) {
 									<button type="button" class="close" data-dismiss="alert">x</button>
 									<?php echo htmlentities($pageError); ?>
 								</div>
-								<a href="<?php echo appUrl('/farmers/index.php'); ?>" class="btn">Back to Farmers List</a>
+								<a href="<?php echo appUrl('/farmers/manage.php'); ?>" class="btn">Back to Farmers List</a>
 <?php } elseif ($farmer) { ?>
 								<form class="form-horizontal row-fluid" action="<?php echo appUrl('/admin/update_farmer.php'); ?>" method="post" novalidate>
 									<input type="hidden" name="id" value="<?php echo htmlentities((string)$farmer['id']); ?>">
@@ -106,7 +106,7 @@ if ($con) {
 									<div class="control-group">
 										<div class="controls">
 											<button type="submit" class="btn btn-primary">Update Farmer</button>
-											<a href="<?php echo appUrl('/farmers/index.php'); ?>" class="btn">Back to Farmers List</a>
+											<a href="<?php echo appUrl('/farmers/manage.php'); ?>" class="btn">Back to Farmers List</a>
 										</div>
 									</div>
 								</form>

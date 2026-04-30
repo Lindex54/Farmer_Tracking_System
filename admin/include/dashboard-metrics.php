@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/audit.php';
+require_once dirname(__DIR__, 2) . '/includes/farmer-product-helpers.php';
 
 if (!function_exists('dashboardScalar')) {
     function dashboardScalar($con, $sql)
@@ -58,20 +59,21 @@ if (!function_exists('getDashboardSnapshot')) {
     function getDashboardSnapshot($con)
     {
         ensureAuditLogTable($con);
+        ensureFarmerProductTables($con);
 
         $snapshot = array(
             'generatedAt' => date('c'),
             'kpis' => array(
-                'products' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM products"),
+                'products' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM marketplace_products WHERE status = 'published'"),
                 'users' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM users"),
                 'farmers' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM farmers"),
-                'orders' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM orders"),
-                'pendingOrders' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM orders WHERE orderStatus IS NULL OR orderStatus <> 'Delivered'"),
-                'deliveredOrders' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM orders WHERE orderStatus = 'Delivered'"),
+                'orders' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM marketplace_orders"),
+                'pendingOrders' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM marketplace_orders WHERE order_status IS NULL OR order_status <> 'Delivered'"),
+                'deliveredOrders' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM marketplace_orders WHERE order_status = 'Delivered'"),
                 'batches' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM batches"),
                 'dryingBatches' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM batches WHERE status = 'drying'"),
                 'todaysLogins' => (int) dashboardScalar($con, "SELECT COUNT(*) FROM audit_logs WHERE event_type LIKE '%login%' AND status = 'success' AND DATE(created_at) = CURDATE()"),
-                'revenue' => (float) dashboardScalar($con, "SELECT COALESCE(SUM((orders.quantity * products.productPrice) + products.shippingCharge), 0) FROM orders INNER JOIN products ON products.id = orders.productId")
+                'revenue' => (float) dashboardScalar($con, "SELECT COALESCE(SUM((quantity * unit_price) + shipping_charge), 0) FROM marketplace_orders")
             ),
             'recentOrders' => array(),
             'ordersTrend' => array(),
@@ -83,10 +85,10 @@ if (!function_exists('getDashboardSnapshot')) {
         $orderSeries = dashboardDateSeries(7);
         $orderRows = dashboardRows(
             $con,
-            "SELECT DATE(orderDate) AS order_day, COUNT(*) AS total_orders
-             FROM orders
-             WHERE orderDate >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-             GROUP BY DATE(orderDate)
+            "SELECT DATE(order_date) AS order_day, COUNT(*) AS total_orders
+             FROM marketplace_orders
+             WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+             GROUP BY DATE(order_date)
              ORDER BY order_day ASC"
         );
         foreach ($orderRows as $row) {
@@ -134,23 +136,24 @@ if (!function_exists('getDashboardSnapshot')) {
 
         $snapshot['categoryBreakdown'] = dashboardRows(
             $con,
-            "SELECT category.categoryName AS label, COUNT(products.id) AS total
-             FROM category
-             LEFT JOIN products ON products.category = category.id
-             GROUP BY category.id, category.categoryName
-             ORDER BY total DESC, category.categoryName ASC
+            "SELECT f.name AS label, COUNT(mp.id) AS total
+             FROM marketplace_products mp
+             INNER JOIN farmers f ON f.id = mp.farmer_id
+             WHERE mp.status = 'published'
+             GROUP BY f.id, f.name
+             ORDER BY total DESC, f.name ASC
              LIMIT 6"
         );
 
         $snapshot['recentOrders'] = dashboardRows(
             $con,
-            "SELECT orders.id, users.name AS customer_name, products.productName AS product_name,
-                    orders.quantity, orders.orderStatus, orders.orderDate,
-                    ((orders.quantity * products.productPrice) + products.shippingCharge) AS order_total
-             FROM orders
-             INNER JOIN users ON users.id = orders.userId
-             INNER JOIN products ON products.id = orders.productId
-             ORDER BY orders.orderDate DESC
+            "SELECT mo.id, users.name AS customer_name, mp.product_name,
+                    mo.quantity, mo.order_status AS orderStatus, mo.order_date AS orderDate,
+                    ((mo.quantity * mo.unit_price) + mo.shipping_charge) AS order_total
+             FROM marketplace_orders mo
+             INNER JOIN users ON users.id = mo.user_id
+             INNER JOIN marketplace_products mp ON mp.id = mo.product_id
+             ORDER BY mo.order_date DESC
              LIMIT 8"
         );
 

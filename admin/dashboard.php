@@ -145,8 +145,8 @@ $snapshot = getDashboardSnapshot($con);
 							<div class="dashboard-card dashboard-side-card">
 								<div class="dashboard-panel">
 									<div class="dashboard-panel-header">
-										<h3>Catalog Breakdown</h3>
-										<span class="muted">Products by category</span>
+										<h3>Farmer Product Mix</h3>
+										<span class="muted">Published products by farmer</span>
 									</div>
 									<div id="category-breakdown-feed" class="dashboard-feed"></div>
 								</div>

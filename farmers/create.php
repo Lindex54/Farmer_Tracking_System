@@ -68,7 +68,7 @@ $activePage = 'farmers';
 									<div class="control-group">
 										<div class="controls">
 											<button type="submit" class="btn btn-primary">Save Farmer</button>
-											<a href="<?php echo appUrl('/farmers/index.php'); ?>" class="btn">Back to Farmers List</a>
+											<a href="<?php echo appUrl('/farmers/manage.php'); ?>" class="btn">Back to Farmers List</a>
 										</div>
 									</div>
 								</form>

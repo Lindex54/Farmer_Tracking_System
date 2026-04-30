@@ -3,6 +3,8 @@ session_start();
 error_reporting(0);
 include('includes/config.php');
 requireUserSession($con, 'login.php');
+require_once __DIR__ . '/includes/farmer-product-helpers.php';
+ensureFarmerProductTables($con);
 
 ?>
 
@@ -96,7 +98,7 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
 					<th class="cart-sub-total item">Price Per unit</th>
 					<th class="cart-sub-total item">Shipping Charge</th>
 					<th class="cart-total item">Grandtotal</th>
-					<th class="cart-total item">Payment Method</th>
+					<th class="cart-total item">Order Status</th>
 					<th class="cart-description item">Order Date</th>
 					<th class="cart-total last-item">Action</th>
 				</tr>
@@ -104,7 +106,7 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
 			
 			<tbody>
 
-<?php $query=mysqli_query($con,"select products.productImage1 as pimg1,products.productName as pname,products.id as proid,orders.productId as opid,orders.quantity as qty,products.productPrice as pprice,products.shippingCharge as shippingcharge,orders.paymentMethod as paym,orders.orderDate as odate,orders.id as orderid from orders join products on orders.productId=products.id where orders.userId='".$_SESSION['id']."' and orders.paymentMethod is not null");
+<?php $query=mysqli_query($con,"select mp.image_path as pimg1,mp.product_name as pname,mp.id as proid,mo.product_id as opid,mo.quantity as qty,mo.unit_price as pprice,mo.shipping_charge as shippingcharge,mo.order_status as paym,mo.order_date as odate,mo.id as orderid from marketplace_orders mo join marketplace_products mp on mo.product_id=mp.id where mo.user_id='".$_SESSION['id']."'");
 $cnt=1;
 while($row=mysqli_fetch_array($query))
 {
@@ -113,7 +115,7 @@ while($row=mysqli_fetch_array($query))
 					<td><?php echo $cnt;?></td>
 					<td class="cart-image">
 						<a class="entry-thumbnail" href="detail.html">
-						    <img src="admin/productimages/<?php echo $row['proid'];?>/<?php echo $row['pimg1'];?>" alt="" width="84" height="146">
+						    <img src="<?php echo htmlentities(marketplaceImageUrl($row['pimg1'])); ?>" alt="" width="84" height="146">
 						</a>
 					</td>
 					<td class="cart-product-name-info">

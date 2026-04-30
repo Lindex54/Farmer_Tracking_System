@@ -1,252 +1,184 @@
-
 <?php
 session_start();
 include('include/config.php');
 include('include/admin-auth.php');
+require_once __DIR__ . '/../includes/farmer-product-helpers.php';
+require_once __DIR__ . '/include/audit.php';
 requireAdmin(appUrl('/admin/index.php'));
-	
-if(isset($_POST['submit']))
-{
-	$category=$_POST['category'];
-	$subcat=$_POST['subcategory'];
-	$productname=$_POST['productName'];
-	$productcompany=$_POST['productCompany'];
-	$productprice=$_POST['productprice'];
-	$productpricebd=$_POST['productpricebd'];
-	$productdescription=$_POST['productDescription'];
-	$productscharge=$_POST['productShippingcharge'];
-	$productavailability=$_POST['productAvailability'];
-	$productimage1=$_FILES["productimage1"]["name"];
-	$productimage2=$_FILES["productimage2"]["name"];
-	$productimage3=$_FILES["productimage3"]["name"];
-//for getting product id
-$query=mysqli_query($con,"select max(id) as pid from products");
-	$result=mysqli_fetch_array($query);
-	 $productid=$result['pid']+1;
-	$dir="productimages/$productid";
-if(!is_dir($dir)){
-		mkdir("productimages/".$productid);
-	}
 
-	move_uploaded_file($_FILES["productimage1"]["tmp_name"],"productimages/$productid/".$_FILES["productimage1"]["name"]);
-	move_uploaded_file($_FILES["productimage2"]["tmp_name"],"productimages/$productid/".$_FILES["productimage2"]["name"]);
-	move_uploaded_file($_FILES["productimage3"]["tmp_name"],"productimages/$productid/".$_FILES["productimage3"]["name"]);
-$sql=mysqli_query($con,"insert into products(category,subCategory,productName,productCompany,productPrice,productDescription,shippingCharge,productAvailability,productImage1,productImage2,productImage3,productPriceBeforeDiscount) values('$category','$subcat','$productname','$productcompany','$productprice','$productdescription','$productscharge','$productavailability','$productimage1','$productimage2','$productimage3','$productpricebd')");
-$_SESSION['msg']="Product Inserted Successfully !!";
+$activePage = 'insert-product';
+$pageError = '';
+$message = '';
+$messageType = 'success';
 
+if (!$con || !ensureFarmerProductTables($con)) {
+    $pageError = 'Unable to prepare marketplace product tables.';
 }
 
+function admin_redirect_products($status, $message)
+{
+    $_SESSION['market_product_msg'] = array('status' => $status, 'message' => $message);
+    header('Location: ' . appUrl('/admin/insert-product.php'));
+    exit();
+}
 
+if ($pageError === '' && isset($_GET['action'], $_GET['id'])) {
+    $action = trim((string)$_GET['action']);
+    $id = (int)$_GET['id'];
+
+    $source = dbFetchOne($con, "SELECT * FROM farmer_products WHERE id = ? LIMIT 1", 'i', array($id));
+    if (!$source) {
+        admin_redirect_products('error', 'Farmer product could not be found.');
+    }
+
+    if ($action === 'publish') {
+        $farmer = dbFetchOne($con, "SELECT id FROM farmers WHERE id = ? LIMIT 1", 'i', array((int)$source['farmer_id']));
+        if (!$farmer) {
+            admin_redirect_products('error', 'Assign this product to a valid farmer before publishing.');
+        }
+
+        $availability = ((float)$source['quantity_available'] > 0) ? 'In Stock' : 'Out of Stock';
+        $ok = dbExecute(
+            $con,
+            "INSERT INTO marketplace_products (farmer_product_id, farmer_id, product_name, description, unit_label, quantity_available, price, image_path, availability, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'published')
+             ON DUPLICATE KEY UPDATE
+                farmer_id = VALUES(farmer_id),
+                product_name = VALUES(product_name),
+                description = VALUES(description),
+                unit_label = VALUES(unit_label),
+                quantity_available = VALUES(quantity_available),
+                price = VALUES(price),
+                image_path = VALUES(image_path),
+                availability = VALUES(availability),
+                status = 'published',
+                updated_at = CURRENT_TIMESTAMP",
+            'iisssddss',
+            array($source['id'], $source['farmer_id'], $source['product_name'], $source['description'], $source['unit_label'], $source['quantity_available'], $source['price'], $source['image_path'], $availability)
+        );
+
+        if ($ok) {
+            dbExecute($con, "UPDATE farmer_products SET status = 'published', reviewed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?", 'i', array($id));
+            writeAuditLog($con, 'admin', !empty($_SESSION['admin_name']) ? $_SESSION['admin_name'] : $_SESSION['alogin'], 'market_product_published', 'success', 'Published farmer product ID ' . $id . '.');
+            admin_redirect_products('success', 'Product published to the customer marketplace.');
+        }
+
+        admin_redirect_products('error', 'Unable to publish product.');
+    }
+
+    if ($action === 'unpublish') {
+        dbExecute($con, "UPDATE farmer_products SET status = 'pending', reviewed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?", 'i', array($id));
+        dbExecute($con, "UPDATE marketplace_products SET status = 'unpublished', updated_at = CURRENT_TIMESTAMP WHERE farmer_product_id = ?", 'i', array($id));
+        writeAuditLog($con, 'admin', !empty($_SESSION['admin_name']) ? $_SESSION['admin_name'] : $_SESSION['alogin'], 'market_product_unpublished', 'success', 'Unpublished farmer product ID ' . $id . '.');
+        admin_redirect_products('success', 'Product removed from the homepage and returned to pending review.');
+    }
+
+    if ($action === 'reject') {
+        dbExecute($con, "UPDATE farmer_products SET status = 'rejected', reviewed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?", 'i', array($id));
+        dbExecute($con, "UPDATE marketplace_products SET status = 'unpublished', updated_at = CURRENT_TIMESTAMP WHERE farmer_product_id = ?", 'i', array($id));
+        writeAuditLog($con, 'admin', !empty($_SESSION['admin_name']) ? $_SESSION['admin_name'] : $_SESSION['alogin'], 'market_product_rejected', 'success', 'Rejected farmer product ID ' . $id . '.');
+        admin_redirect_products('success', 'Product rejected and removed from marketplace publishing.');
+    }
+}
+
+if (!empty($_SESSION['market_product_msg'])) {
+    $messageType = $_SESSION['market_product_msg']['status'];
+    $message = $_SESSION['market_product_msg']['message'];
+    unset($_SESSION['market_product_msg']);
+}
+
+$submissions = array();
+if ($pageError === '') {
+    $result = mysqli_query($con, "SELECT fp.*, f.name AS farmer_name, f.phone AS farmer_phone, f.location AS farmer_location
+        FROM farmer_products fp
+        LEFT JOIN farmers f ON f.id = fp.farmer_id
+        ORDER BY FIELD(fp.status, 'pending', 'published', 'rejected'), fp.submitted_at DESC");
+    while ($result && ($row = mysqli_fetch_assoc($result))) {
+        $submissions[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Admin| Insert Product</title>
+	<title><?php echo APP_NAME; ?> | Publish Farmer Products</title>
 	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-	<link type="text/css" href="css/theme.css?v=side-rail-2" rel="stylesheet">
+	<link type="text/css" href="css/theme.css?v=nav-shell-1" rel="stylesheet">
 	<link type="text/css" href="images/icons/css/font-awesome.css" rel="stylesheet">
-	<link type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600' rel='stylesheet'>
-<script src="http://js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
-<script type="text/javascript">bkLib.onDomLoaded(nicEditors.allTextAreas);</script>
-
-   <script>
-function getSubcat(val) {
-	$.ajax({
-	type: "POST",
-	url: "get_subcat.php",
-	data:'cat_id='+val,
-	success: function(data){
-		$("#subcategory").html(data);
-	}
-	});
-}
-function selectCountry(val) {
-$("#search-box").val(val);
-$("#suggesstion-box").hide();
-}
-</script>	
-
-<!-- Favicon -->
-<link rel="shortcut icon" href="assets/images/favicon.ico">
-
+	<link rel="shortcut icon" href="assets/images/favicon.ico">
+	<style>
+		.product-review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+		.review-card { background: #fff; border: 1px solid #dce7df; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(20, 47, 31, 0.08); }
+		.review-card img { width: 100%; height: 210px; object-fit: cover; display: block; background: #eef4ef; }
+		.review-card-body { padding: 16px; }
+		.review-title { margin: 0 0 8px; color: #173b2a; font-size: 18px; line-height: 1.3; }
+		.review-meta { color: #5b6d63; margin-bottom: 8px; }
+		.review-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+		.status-pill { display: inline-block; padding: 4px 9px; border-radius: 999px; background: #fff4d9; color: #8a5a00; font-weight: 700; text-transform: capitalize; }
+		.status-published { background: #ddf3e5; color: #276b3e; }
+		.status-rejected { background: #f8dddd; color: #8a2828; }
+		@media (max-width: 979px) { .product-review-grid { grid-template-columns: 1fr; } }
+	</style>
 </head>
 <body>
-<?php include('include/header.php');?>
-
+<?php include('include/header.php'); ?>
 	<div class="wrapper">
 		<div class="container">
 			<div class="row">
-<?php include('include/sidebar.php');?>				
-			<div class="span9">
+<?php include('include/sidebar.php'); ?>
+				<div class="span9">
 					<div class="content">
-
 						<div class="module">
-							<div class="module-head">
-								<h3>Insert Product</h3>
-							</div>
+							<div class="module-head"><h3>Insert Product From Farmer Submissions</h3></div>
 							<div class="module-body">
-
-									<?php if(isset($_POST['submit']))
-{?>
-									<div class="alert alert-success">
-										<button type="button" class="close" data-dismiss="alert">×</button>
-									<strong>Well done!</strong>	<?php echo htmlentities($_SESSION['msg']);?><?php echo htmlentities($_SESSION['msg']="");?>
-									</div>
+<?php if ($pageError !== '') { ?>
+								<div class="alert alert-error"><?php echo htmlentities($pageError); ?></div>
 <?php } ?>
-
-
-									<?php if(isset($_GET['del']))
-{?>
-									<div class="alert alert-error">
-										<button type="button" class="close" data-dismiss="alert">×</button>
-									<strong>Oh snap!</strong> 	<?php echo htmlentities($_SESSION['delmsg']);?><?php echo htmlentities($_SESSION['delmsg']="");?>
-									</div>
+<?php if ($message !== '') { ?>
+								<div class="alert <?php echo $messageType === 'success' ? 'alert-success' : 'alert-error'; ?>"><?php echo htmlentities($message); ?></div>
 <?php } ?>
-
-									<br />
-
-			<form class="form-horizontal row-fluid" name="insertproduct" method="post" enctype="multipart/form-data">
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Category</label>
-<div class="controls">
-<select name="category" class="span8 tip" onChange="getSubcat(this.value);"  required>
-<option value="">Select Category</option> 
-<?php $query=mysqli_query($con,"select * from category");
-while($row=mysqli_fetch_array($query))
-{?>
-
-<option value="<?php echo $row['id'];?>"><?php echo $row['categoryName'];?></option>
+								<div class="product-review-grid">
+<?php foreach ($submissions as $product) { ?>
+									<div class="review-card">
+										<img src="../<?php echo htmlentities(marketplaceImageUrl($product['image_path'])); ?>" alt="">
+										<div class="review-card-body">
+											<h4 class="review-title"><?php echo htmlentities($product['product_name']); ?></h4>
+											<div class="review-meta">Farmer: <?php echo $product['farmer_name'] ? htmlentities($product['farmer_name']) : '<strong>Submitted farmer not found</strong>'; ?><?php echo $product['farmer_location'] ? ' | ' . htmlentities($product['farmer_location']) : ''; ?></div>
+											<div class="review-meta">Qty: <?php echo htmlentities(number_format((float)$product['quantity_available'], 2) . ' ' . $product['unit_label']); ?> | Price: <?php echo htmlentities(formatMarketMoney($product['price'])); ?></div>
+											<p><?php echo htmlentities($product['description']); ?></p>
+											<span class="status-pill status-<?php echo htmlentities($product['status']); ?>"><?php echo htmlentities($product['status']); ?></span>
+<?php if (empty($product['farmer_name'])) { ?>
+											<div class="alert alert-error" style="margin-top:12px;">This old submission has no valid farmer attached. Ask the farmer to resubmit it from the farmer portal.</div>
 <?php } ?>
-</select>
-</div>
-</div>
-
-									
-<div class="control-group">
-<label class="control-label" for="basicinput">Sub Category</label>
-<div class="controls">
-<select   name="subcategory"  id="subcategory" class="span8 tip" required>
-</select>
-</div>
-</div>
-
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Name</label>
-<div class="controls">
-<input type="text"    name="productName"  placeholder="Enter Product Name" class="span8 tip" required>
-</div>
-</div>
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Company</label>
-<div class="controls">
-<input type="text"    name="productCompany"  placeholder="Enter Product Comapny Name" class="span8 tip" required>
-</div>
-</div>
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Price Before Discount</label>
-<div class="controls">
-<input type="text"    name="productpricebd"  placeholder="Enter Product Price" class="span8 tip" required>
-</div>
-</div>
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Price After Discount(Selling Price)</label>
-<div class="controls">
-<input type="text"    name="productprice"  placeholder="Enter Product Price" class="span8 tip" required>
-</div>
-</div>
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Description</label>
-<div class="controls">
-<textarea  name="productDescription"  placeholder="Enter Product Description" rows="6" class="span8 tip">
-</textarea>  
-</div>
-</div>
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Shipping Charge</label>
-<div class="controls">
-<input type="text"    name="productShippingcharge"  placeholder="Enter Product Shipping Charge" class="span8 tip" required>
-</div>
-</div>
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Availability</label>
-<div class="controls">
-<select   name="productAvailability"  id="productAvailability" class="span8 tip" required>
-<option value="">Select</option>
-<option value="In Stock">In Stock</option>
-<option value="Out of Stock">Out of Stock</option>
-</select>
-</div>
-</div>
-
-
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Image1</label>
-<div class="controls">
-<input type="file" name="productimage1" id="productimage1" value="" class="span8 tip" required>
-</div>
-</div>
-
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Image2</label>
-<div class="controls">
-<input type="file" name="productimage2"  class="span8 tip" required>
-</div>
-</div>
-
-
-
-<div class="control-group">
-<label class="control-label" for="basicinput">Product Image3</label>
-<div class="controls">
-<input type="file" name="productimage3"  class="span8 tip">
-</div>
-</div>
-
-	<div class="control-group">
-											<div class="controls">
-												<button type="submit" name="submit" class="btn">Insert</button>
+											<div class="review-actions">
+<?php if (!empty($product['farmer_name']) && $product['status'] === 'pending') { ?>
+												<a class="btn btn-primary" href="<?php echo appUrl('/admin/insert-product.php?action=publish&id=' . (int)$product['id']); ?>">Publish to Homepage</a>
+												<a class="btn" href="<?php echo appUrl('/admin/insert-product.php?action=reject&id=' . (int)$product['id']); ?>" onclick="return confirm('Reject this product?');">Reject</a>
+<?php } elseif ($product['status'] === 'published') { ?>
+												<a class="btn" href="<?php echo appUrl('/admin/insert-product.php?action=unpublish&id=' . (int)$product['id']); ?>" onclick="return confirm('Remove this product from the homepage?');">Unpublish</a>
+<?php } elseif (!empty($product['farmer_name']) && $product['status'] === 'rejected') { ?>
+												<a class="btn btn-primary" href="<?php echo appUrl('/admin/insert-product.php?action=publish&id=' . (int)$product['id']); ?>">Publish Anyway</a>
+<?php } ?>
 											</div>
 										</div>
-									</form>
+									</div>
+<?php } ?>
+<?php if (empty($submissions)) { ?>
+									<div class="alert alert-info">No farmer products have been submitted yet.</div>
+<?php } ?>
+								</div>
 							</div>
 						</div>
-
-
-	
-						
-						
-					</div><!--/.content-->
-				</div><!--/.span9-->
+					</div>
+				</div>
 			</div>
-		</div><!--/.container-->
-	</div><!--/.wrapper-->
-
-<?php include('include/footer.php');?>
-
+		</div>
+	</div>
+<?php include('include/footer.php'); ?>
 	<script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
-	<script src="scripts/jquery-ui-1.10.1.custom.min.js" type="text/javascript"></script>
 	<script src="bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-	<script src="scripts/flot/jquery.flot.js" type="text/javascript"></script>
-	<script src="scripts/datatables/jquery.dataTables.js"></script>
-	<script>
-		$(document).ready(function() {
-			$('.datatable-1').dataTable();
-			$('.dataTables_paginate').addClass("btn-group datatable-pagination");
-			$('.dataTables_paginate > a').wrapInner('<span />');
-			$('.dataTables_paginate > a:first-child').append('<i class="icon-chevron-left shaded"></i>');
-			$('.dataTables_paginate > a:last-child').append('<i class="icon-chevron-right shaded"></i>');
-		} );
-	</script>
 </body>
+</html>

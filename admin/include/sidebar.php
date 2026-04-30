@@ -33,11 +33,8 @@ $isOrdersPage = (
 );
 
 $isUsersPage = $currentFile === 'manage-users.php';
-$isCategoryPage = in_array($currentFile, array('category.php', 'edit-category.php'), true);
-$isSubCategoryPage = in_array($currentFile, array('subcategory.php', 'edit-subcategory.php'), true);
 $isInsertProductPage = $currentFile === 'insert-product.php';
-$isManageProductsPage = in_array($currentFile, array('manage-products.php', 'edit-products.php', 'update-image1.php', 'update-image2.php', 'update-image3.php'), true);
-$isFarmersPage = (strpos($currentScript, '/farmers/') !== false || $activePage === 'farmers');
+$isFarmersPage = ($activePage === 'farmers' || strpos($currentScript, '/farmers/manage.php') !== false || strpos($currentScript, '/farmers/create.php') !== false || strpos($currentScript, '/farmers/edit.php') !== false);
 $isUserLogsPage = (in_array($currentFile, array('user-logs.php', 'audit-logs.php'), true) || $activePage === 'audit-logs');
 ?>
 <div class="span3">
@@ -109,11 +106,8 @@ $num1 = mysqli_num_rows($rt);
 		</ul>
 
 		<ul class="widget widget-menu unstyled">
-			<li class="<?php echo $isCategoryPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/admin/category.php'); ?>"><i class="menu-icon icon-tasks"></i> Create Category </a></li>
-			<li class="<?php echo $isSubCategoryPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/admin/subcategory.php'); ?>"><i class="menu-icon icon-tasks"></i>Sub Category </a></li>
 			<li class="<?php echo $isInsertProductPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/admin/insert-product.php'); ?>"><i class="menu-icon icon-paste"></i>Insert Product </a></li>
-			<li class="<?php echo $isManageProductsPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/admin/manage-products.php'); ?>"><i class="menu-icon icon-table"></i>Manage Products </a></li>
-			<li class="<?php echo $isFarmersPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/farmers/index.php'); ?>"><i class="menu-icon icon-leaf"></i>Manage Farmers </a></li>
+			<li class="<?php echo $isFarmersPage ? 'active' : ''; ?>"><a href="<?php echo appUrl('/farmers/manage.php'); ?>"><i class="menu-icon icon-leaf"></i>Manage Farmers </a></li>
 		</ul>
 
 		<ul class="widget widget-menu unstyled">

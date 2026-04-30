@@ -13,7 +13,7 @@ function clean_text($value)
 
 function redirect_with_message($status, $message)
 {
-    redirectWithFlash(appUrl('/farmers/index.php'), $status, $message, 'farmers');
+    redirectWithFlash(appUrl('/farmers/manage.php'), $status, $message, 'farmers');
 }
 
 function generate_unique_username($con, $baseUsername, $excludeId = 0)

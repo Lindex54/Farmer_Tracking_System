@@ -19,7 +19,7 @@ function redirect_to_add_batch($status, $message)
 
 function redirect_to_farmers_index($status, $message)
 {
-    redirectWithFlash(appUrl('/farmers/index.php'), $status, $message, 'farmers');
+    redirectWithFlash(appUrl('/farmers/manage.php'), $status, $message, 'farmers');
 }
 
 function redirect_to_batches_page($status, $message, $newBatchId = 0)

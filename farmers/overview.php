@@ -4,6 +4,7 @@ error_reporting(0);
 include('../admin/include/config.php');
 include('../admin/include/admin-auth.php');
 require_once __DIR__ . '/../includes/post-harvest-helpers.php';
+require_once __DIR__ . '/../includes/farmer-product-helpers.php';
 requireAdminOrFarmer(appUrl('/farmers/login.php'));
 
 $activePage = 'overview';
@@ -18,6 +19,8 @@ if (!$con) {
     $pageError = 'Database connection is not available.';
 } elseif (!ensurePostHarvestTables($con)) {
     $pageError = 'Unable to prepare overview tables.';
+} elseif (!ensureFarmerProductTables($con)) {
+    $pageError = 'Unable to prepare marketplace tables.';
 } elseif ($isFarmerView && $currentFarmerId <= 0) {
     $pageError = 'Your farmer account could not be identified. Please sign in again.';
 } elseif ($isFarmerView) {
@@ -47,6 +50,7 @@ $qualityStats = array();
 $registeredFarmers = array('total_farmers' => 0);
 $recentBatches = array();
 $methodRows = array();
+$marketStats = array('submitted_products' => 0, 'published_products' => 0, 'sold_orders' => 0, 'sales_revenue' => 0);
 
 if ($pageError === '') {
     if ($isFarmerView) {
@@ -112,6 +116,17 @@ if ($pageError === '') {
     );
 
     $registeredFarmers = overview_fetch($con, "SELECT COUNT(*) AS total_farmers FROM farmers");
+    $marketProductWhere = $isFarmerView ? ' WHERE farmer_id = ?' : '';
+    $submittedProducts = overview_fetch($con, "SELECT COUNT(*) AS total FROM farmer_products" . $marketProductWhere, $types, $params);
+    $publishedProducts = overview_fetch($con, "SELECT COUNT(*) AS total FROM marketplace_products" . $marketProductWhere, $types, $params);
+    $soldOrders = overview_fetch($con, "SELECT COUNT(*) AS total FROM marketplace_orders" . $marketProductWhere, $types, $params);
+    $salesRevenue = overview_fetch($con, "SELECT COALESCE(SUM((quantity * unit_price) + shipping_charge), 0) AS total FROM marketplace_orders" . $marketProductWhere, $types, $params);
+    $marketStats = array(
+        'submitted_products' => isset($submittedProducts['total']) ? $submittedProducts['total'] : 0,
+        'published_products' => isset($publishedProducts['total']) ? $publishedProducts['total'] : 0,
+        'sold_orders' => isset($soldOrders['total']) ? $soldOrders['total'] : 0,
+        'sales_revenue' => isset($salesRevenue['total']) ? $salesRevenue['total'] : 0
+    );
 
     $recentSql = "SELECT b.batch_id, b.harvest_date, b.quantity_kg, b.remaining_qty_kg, b.drying_method, b.status, f.name AS farmer_name
                   FROM batches b
@@ -166,7 +181,7 @@ $remainingPercent = $totalQuantity > 0 ? min(100, ($remainingQuantity / $totalQu
 	<link type="text/css" href="../admin/css/theme.css?v=nav-shell-1" rel="stylesheet">
 	<link type="text/css" href="../admin/images/icons/css/font-awesome.css" rel="stylesheet">
 	<link type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
-	<link type="text/css" href="include/farmers-ui.css" rel="stylesheet">
+	<link type="text/css" href="include/farmers-ui.css?v=farmer-header-2" rel="stylesheet">
 	<link rel="shortcut icon" href="../assets/images/favicon.ico">
 	<style>
 		.overview-band { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
@@ -221,6 +236,16 @@ $remainingPercent = $totalQuantity > 0 ? min(100, ($remainingQuantity / $totalQu
 		.profile-list { margin: 0; }
 		.profile-list dt { color: #60736a; font-weight: 700; }
 		.profile-list dd { margin-left: 0; margin-bottom: 9px; }
+		.overview-grid .module .module-head {
+			height: auto !important;
+			min-height: 46px !important;
+			padding: 12px 18px !important;
+		}
+		.overview-grid .module .module-head h3 {
+			height: auto !important;
+			line-height: 1.3 !important;
+			white-space: normal !important;
+		}
 		.method-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #edf2ef; padding: 8px 0; }
 		.method-row:last-child { border-bottom: 0; }
 		@media (max-width: 979px) { .overview-band, .overview-grid { grid-template-columns: 1fr; } }
@@ -249,6 +274,12 @@ $remainingPercent = $totalQuantity > 0 ? min(100, ($remainingQuantity / $totalQu
 							<div class="overview-stat stat-complete"><span>Complete Batches</span><strong><?php echo overview_number(isset($batchStats['complete_batches']) ? $batchStats['complete_batches'] : 0); ?></strong></div>
 							<div class="overview-stat stat-quality"><span>Quality Tests</span><strong><?php echo overview_number(isset($qualityStats['total_quality_logs']) ? $qualityStats['total_quality_logs'] : 0); ?></strong></div>
 							<div class="overview-stat stat-alert"><span>Mold Alerts</span><strong><?php echo overview_number(isset($qualityStats['mold_alerts']) ? $qualityStats['mold_alerts'] : 0); ?></strong></div>
+						</div>
+						<div class="overview-band">
+							<div class="overview-stat stat-batches"><span>Products Submitted</span><strong><?php echo overview_number(isset($marketStats['submitted_products']) ? $marketStats['submitted_products'] : 0); ?></strong></div>
+							<div class="overview-stat stat-complete"><span>Products Live</span><strong><?php echo overview_number(isset($marketStats['published_products']) ? $marketStats['published_products'] : 0); ?></strong></div>
+							<div class="overview-stat stat-quality"><span>Sold Orders</span><strong><?php echo overview_number(isset($marketStats['sold_orders']) ? $marketStats['sold_orders'] : 0); ?></strong></div>
+							<div class="overview-stat stat-quantity"><span>Sales Revenue</span><strong><?php echo htmlentities(formatMarketMoney(isset($marketStats['sales_revenue']) ? $marketStats['sales_revenue'] : 0)); ?></strong></div>
 						</div>
 
 						<div class="overview-grid">
