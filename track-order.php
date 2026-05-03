@@ -1,6 +1,8 @@
 <?php
 session_start();
 include_once 'includes/config.php';
+require_once __DIR__ . '/includes/farmer-product-helpers.php';
+ensureFarmerProductTables($con);
 $oid=intval($_GET['oid']);
  ?>
 <script language="javascript" type="text/javascript">
@@ -71,10 +73,10 @@ else{
    </tr>
    <?php  }
 $st='Delivered';
-   $rt = mysqli_query($con,"SELECT * FROM orders WHERE id='$oid'");
+   $rt = mysqli_query($con,"SELECT * FROM marketplace_orders WHERE id='$oid'");
      while($num=mysqli_fetch_array($rt))
      {
-     $currrentSt=$num['orderStatus'];
+     $currrentSt=$num['order_status'];
    }
      if($st==$currrentSt)
      { ?>

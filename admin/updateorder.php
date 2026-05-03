@@ -4,14 +4,17 @@ session_start();
 include_once 'include/config.php';
 include('include/admin-auth.php');
 require_once __DIR__ . '/include/audit.php';
+require_once __DIR__ . '/../includes/farmer-product-helpers.php';
 requireAdmin(appUrl('/admin/index.php'));
+ensureFarmerProductTables($con);
 $oid=intval($_GET['oid']);
 if(isset($_POST['submit2'])){
 $status=$_POST['status'];
 $remark=$_POST['remark'];//space char
 
 $query=mysqli_query($con,"insert into ordertrackhistory(orderId,status,remark) values('$oid','$status','$remark')");
-$sql=mysqli_query($con,"update orders set orderStatus='$status' where id='$oid'");
+$safeStatus = mysqli_real_escape_string($con, $status);
+$sql=mysqli_query($con,"update marketplace_orders set order_status='$safeStatus' where id='$oid'");
 writeAuditLog($con, 'admin', !empty($_SESSION['admin_name']) ? $_SESSION['admin_name'] : $_SESSION['alogin'], 'order_status_updated', 'success', 'Administrator updated order #' . $oid . ' to status "' . $status . '". Remark: ' . $remark);
 echo "<script>alert('Order updated sucessfully...');</script>";
 //}
@@ -78,10 +81,10 @@ $ret = mysqli_query($con,"SELECT * FROM ordertrackhistory WHERE orderId='$oid'")
    <?php } ?>
    <?php 
 $st='Delivered';
-   $rt = mysqli_query($con,"SELECT * FROM orders WHERE id='$oid'");
+   $rt = mysqli_query($con,"SELECT * FROM marketplace_orders WHERE id='$oid'");
      while($num=mysqli_fetch_array($rt))
      {
-     $currrentSt=$num['orderStatus'];
+     $currrentSt=$num['order_status'];
    }
      if($st==$currrentSt)
      { ?>
